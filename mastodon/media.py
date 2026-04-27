@@ -20,8 +20,7 @@ class Mastodon(Internals):
         Get the updated JSON for one non-attached / in progress media upload belonging
         to the logged-in user.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/media/{id}')
+        pass
 
     ###
     # Writing data: Media
@@ -57,39 +56,7 @@ class Mastodon(Internals):
 
         The returned value (or its id) can be used in a status post as the `media_ids` parameter.
         """
-        files = {'file': self.__load_media_file(
-            media_file, mime_type, file_name)}
-
-        if focus is not None:
-            focus = f"{focus[0]},{focus[1]}"
-
-        if thumbnail is not None:
-            if not self.verify_minimum_version("3.2.0", cached=True):
-                raise MastodonVersionError('Thumbnail requires version > 3.2.0')
-            files["thumbnail"] = self.__load_media_file(thumbnail, thumbnail_mime_type)
-
-        # Disambiguate URL by version
-        if self.verify_minimum_version("3.1.4", cached=True):
-            ret_dict = self.__api_request(
-                'POST', '/api/v2/media', files=files, params={'description': description, 'focus': focus})
-        else:
-            ret_dict = self.__api_request(
-                'POST', '/api/v1/media', files=files, params={'description': description, 'focus': focus})
-
-        # Wait for processing?
-        if synchronous:
-            if self.verify_minimum_version("3.1.4"):
-                while not "url" in ret_dict or ret_dict.url is None:
-                    try:
-                        ret_dict = self.media(ret_dict)
-                        time.sleep(5.0)
-                    except:
-                        raise MastodonAPIError("Attachment could not be processed")
-            else:
-                # Old version always waits
-                return ret_dict
-
-        return ret_dict
+        pass
 
     @api_version("2.3.0", "3.2.0")
     def media_update(self, id: Union[MediaAttachment, IdType], description: Optional[str] = None, 
@@ -105,19 +72,4 @@ class Mastodon(Internals):
         not been used in a status yet). For editing media attachment metadata after posting, see `status_update` and
         `generate_media_edit_attributes`.
         """
-        id = self.__unpack_id(id)
-
-        if focus is not None:
-            focus = f"{focus[0]},{focus[1]}"
-
-        params = self.__generate_params(
-            locals(), ['id', 'thumbnail', 'thumbnail_mime_type'])
-
-        if thumbnail is not None:
-            if not self.verify_minimum_version("3.2.0", cached=True):
-                raise MastodonVersionError('Thumbnail requires version > 3.2.0')
-            files = {"thumbnail": self.__load_media_file(
-                thumbnail, thumbnail_mime_type)}
-            return self.__api_request('PUT', f'/api/v1/media/{id}', params, files=files)
-        else:
-            return self.__api_request('PUT', f'/api/v1/media/{id}', params)
+        pass

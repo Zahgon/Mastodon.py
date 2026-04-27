@@ -17,7 +17,7 @@ class Mastodon(Internals):
 
         Deprecated. Please use :ref:`trending_tags() <trending_tags()>` instead.
         """
-        return self.trending_tags(limit=limit)
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def trending_tags(self, limit: Optional[int] = None, offset: Optional[int] = None, lang: Optional[str] = None) -> NonPaginatableList[Tag]:
@@ -38,14 +38,7 @@ class Mastodon(Internals):
 
         The results are sorted by the instances's trending algorithm, descending.
         """
-        params = self.__generate_params(locals())
-        if "lang" in params:
-            del params["lang"]
-        if self.verify_minimum_version("3.5.0", cached=True):
-            # Starting 3.5.0, old version is deprecated
-            return self.__api_request('GET', '/api/v1/trends/tags', params, lang_override=lang)
-        else:
-            return self.__api_request('GET', '/api/v1/trends', params, lang_override=lang)
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def trending_statuses(self, limit: Optional[int] = None, offset: Optional[int] = None, lang: Optional[str] = None) -> NonPaginatableList[Status]:
@@ -61,10 +54,7 @@ class Mastodon(Internals):
 
         The results are sorted by the instances's trending algorithm, descending.
         """
-        params = self.__generate_params(locals())
-        if "lang" in params:
-            del params["lang"]
-        return self.__api_request('GET', '/api/v1/trends/statuses', params, lang_override=lang)
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def trending_links(self, limit: Optional[int] = None, offset: Optional[int] = None, lang: Optional[str] = None) -> NonPaginatableList[PreviewCard]:
@@ -78,7 +68,4 @@ class Mastodon(Internals):
 
         The results are sorted by the instances's trending algorithm, descending.
         """
-        params = self.__generate_params(locals())
-        if "lang" in params:
-            del params["lang"]        
-        return self.__api_request('GET', '/api/v1/trends/links', params, lang_override=lang)
+        pass

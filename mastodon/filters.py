@@ -21,15 +21,14 @@ class Mastodon(Internals):
         """
         Fetch all of the logged-in user's filters.
         """
-        return self.__api_request('GET', '/api/v1/filters')
+        pass
 
     @api_version("2.4.3", "2.4.3")
     def filter(self, id: Union[Filter, IdType]) -> Filter:
         """
         Fetches information about the filter with the specified `id`.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/filters/{id}')
+        pass
 
     @api_version("2.4.3", "2.4.3")
     def filters_apply(self, objects: Union[PaginatableList[Status], PaginatableList[Notification]], filters: Union[NonPaginatableList[Filter], NonPaginatableList[FilterV2]], context: str) -> Union[PaginatableList[Status], PaginatableList[Notification]]:
@@ -43,30 +42,7 @@ class Mastodon(Internals):
         NB: This is for v1 filters. v2 filters are applied by the server, which adds the "filtered"
         attribute to filtered statuses.
         """
-        # Build filter regex
-        filter_strings = []
-        for keyword_filter in filters:
-            if not context in keyword_filter["context"]:
-                continue
-
-            filter_string = re.escape(keyword_filter["phrase"])
-            if keyword_filter["whole_word"]:
-                filter_string = "\\b" + filter_string + "\\b"
-            filter_strings.append(filter_string)
-        filter_re = re.compile("|".join(filter_strings), flags=re.IGNORECASE)
-
-        # Apply
-        filter_results = []
-        for filter_object in objects:
-            filter_status = filter_object
-            if "status" in filter_object:
-                filter_status = filter_object["status"]
-            filter_text = filter_status["content"]
-            filter_text = re.sub(r"<.*?>", " ", filter_text)
-            filter_text = re.sub(r"\s+", " ", filter_text).strip()
-            if not filter_re.search(filter_text):
-                filter_results.append(filter_object)
-        return filter_results
+        pass
 
     ###
     # Writing data: Keyword filters
@@ -89,13 +65,7 @@ class Mastodon(Internals):
 
         Returns the newly created filter.
         """
-        params = self.__generate_params(locals())
-
-        for context_val in context:
-            if not context_val in ['home', 'notifications', 'public', 'thread']:
-                raise MastodonIllegalArgumentError('Invalid filter context.')
-
-        return self.__api_request('POST', '/api/v1/filters', params)
+        pass
 
     @api_version("2.4.3", "2.4.3")
     def filter_update(self, id: Union[Filter, IdType], phrase: Optional[str] = None, context: Optional[str] = None, irreversible: Optional[bool] = None, whole_word: Optional[bool] = None, expires_in: Optional[int] = None) -> Filter:
@@ -105,17 +75,14 @@ class Mastodon(Internals):
 
         Returns the updated filter.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ['id'])
-        return self.__api_request('PUT', f'/api/v1/filters/{id}', params)
+        pass
 
     @api_version("2.4.3", "2.4.3")
     def filter_delete(self, id: Union[Filter, FilterV2, IdType]):
         """
         Deletes the filter with the given `id`.
         """
-        id = self.__unpack_id(id)
-        self.__api_request('DELETE', f'/api/v1/filters/{id}')
+        pass
 
     ###
     # Filters v2 api
@@ -125,15 +92,14 @@ class Mastodon(Internals):
         """
         Fetch all filters for the authenticated user.
         """
-        return self.__api_request('GET', '/api/v2/filters')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def filter_v2(self, filter_id: Union[Filter, IdType]) -> Filter:
         """
         Fetch a specific filter by its ID.
         """
-        filter_id = self.__unpack_id(filter_id)
-        return self.__api_request('GET', f'/api/v2/filters/{filter_id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def create_filter_v2(
@@ -169,8 +135,7 @@ class Mastodon(Internals):
             - "whole_word": Whether word boundaries should be considered.
             
         """
-        params = self.__generate_params(locals(), for_json=True)
-        return self.__api_request('POST', '/api/v2/filters', params, use_json=True)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def update_filter_v2(
@@ -187,25 +152,21 @@ class Mastodon(Internals):
 
         Parameters are as in `create_filter_v2()`. Only the parameters you want to update need to be provided.
         """
-        filter_id = self.__unpack_id(filter_id)
-        params = self.__generate_params(locals(), for_json=True)
-        return self.__api_request('PUT', f'/api/v2/filters/{filter_id}', params, use_json=True)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def delete_filter_v2(self, filter_id: Union[FilterV2, IdType]) -> None:
         """
         Delete an existing filter.
         """
-        filter_id = self.__unpack_id(filter_id)
-        self.__api_request('DELETE', f'/api/v2/filters/{filter_id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def filter_keywords_v2(self, filter_id: Union[FilterV2, IdType]) -> NonPaginatableList[FilterKeyword]:
         """
         Fetch all keywords associated with a given filter.
         """
-        filter_id = self.__unpack_id(filter_id)
-        return self.__api_request('GET', f'/api/v2/filters/{filter_id}/keywords')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def add_filter_keyword_v2(
@@ -219,25 +180,21 @@ class Mastodon(Internals):
 
         Parameters are as in `create_filter_v2()` `keywords_attributes`.
         """
-        filter_id = self.__unpack_id(filter_id)
-        params = self.__generate_params(locals())
-        return self.__api_request('POST', f'/api/v2/filters/{filter_id}/keywords', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def delete_filter_keyword_v2(self, keyword_id: Union[FilterKeyword, IdType]) -> None:
         """
         Delete a single keyword from any filter.
         """
-        keyword_id = self.__unpack_id(keyword_id)
-        self.__api_request('DELETE', f'/api/v2/filters/keywords/{keyword_id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def filter_statuses_v2(self, filter_id: Union[FilterV2, IdType]) -> List[FilterStatus]:
         """
         Retrieve all status-based filters for a FilterV2.
         """
-        filter_id = self.__unpack_id(filter_id)
-        return self.__api_request('GET', f'/api/v2/filters/{filter_id}/statuses')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def add_filter_status_v2(self, filter_id: Union[FilterV2, IdType], status_id: Union[Status, IdType]) -> FilterStatus:
@@ -245,23 +202,18 @@ class Mastodon(Internals):
         Add a status to a filter, which will then match on that status in addition to any keywords.
         Includes reblogs, does not include replies.
         """
-        filter_id = self.__unpack_id(filter_id)
-        status_id = self.__unpack_id(status_id)
-        params = self.__generate_params({"status_id": status_id})
-        return self.__api_request('POST', f'/api/v2/filters/{filter_id}/statuses', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def filter_status_v2(self, filter_status_id: Union[FilterStatus, IdType]) -> FilterStatus:
         """
         Fetch a single status-based filter by its ID.
         """
-        filter_status_id = self.__unpack_id(filter_status_id)
-        return self.__api_request('GET', f'/api/v2/filters/statuses/{filter_status_id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def delete_filter_status_v2(self, filter_status_id: Union[FilterStatus, IdType]) -> None:
         """
         Remove a status filter from a FilterV2.
         """
-        filter_status_id = self.__unpack_id(filter_status_id)
-        self.__api_request('DELETE', f'/api/v2/filters/statuses/{filter_status_id}')
+        pass

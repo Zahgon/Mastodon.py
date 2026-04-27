@@ -24,8 +24,7 @@ class Mastodon(Internals):
 
         Does not require authentication for publicly visible statuses.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/statuses/{id}')
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def statuses(self, ids: List[Union[Status, IdType]]) -> List[Status]:
@@ -34,8 +33,7 @@ class Mastodon(Internals):
 
         Does not require authentication for publicly visible accounts.
         """
-        ids = [self.__unpack_id(id, dateconv=True) for id in ids]
-        return self.__api_request('GET', '/api/v1/statuses', {"id[]": ids})
+        pass
 
     @api_version("1.0.0", "3.0.0")
     def status_card(self, id: Union[Status, IdType]) -> PreviewCard:
@@ -50,11 +48,7 @@ class Mastodon(Internals):
         instead. Mastodon.py will try to mimic the old behaviour, but this
         is somewhat inefficient and not guaranteed to be the case forever.
         """
-        if self.verify_minimum_version("3.0.0", cached=True):
-            return self.status(id).card
-        else:
-            id = self.__unpack_id(id)
-            return self.__api_request('GET', f'/api/v1/statuses/{id}/card')
+        pass
 
     @api_version("1.0.0", "1.0.0")
     def status_context(self, id: Union[Status, IdType]) -> Context:
@@ -63,8 +57,7 @@ class Mastodon(Internals):
 
         Does not require authentication for publicly visible statuses.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/statuses/{id}/context')
+        pass
 
     @api_version("1.0.0", "2.1.0")
     def status_reblogged_by(self, id: Union[Status, IdType]) -> NonPaginatableList[Account]:
@@ -77,8 +70,7 @@ class Mastodon(Internals):
         visibility, this endpoint will not return your account as having
         reblogged it.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/statuses/{id}/reblogged_by')
+        pass
 
     @api_version("1.0.0", "2.1.0")
     def status_favourited_by(self, id: Union[Status, IdType]) -> NonPaginatableList[Account]:
@@ -87,8 +79,7 @@ class Mastodon(Internals):
 
         Does not require authentication for publicly visible statuses.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/statuses/{id}/favourited_by')
+        pass
 
     ###
     # Reading data: Scheduled statuses
@@ -99,16 +90,14 @@ class Mastodon(Internals):
         """
         Fetch a list of scheduled statuses
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/scheduled_statuses', params)
+        pass
 
     @api_version("2.7.0", "2.7.0")
     def scheduled_status(self, id: Union[ScheduledStatus, IdType]) -> ScheduledStatus:
         """
         Fetch information about the scheduled status with the given id.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/scheduled_statuses/{id}')
+        pass
 
     ###
     # Writing data: Statuses
@@ -122,98 +111,7 @@ class Mastodon(Internals):
         """
         Internal statuses poster helper
         """
-        if quote_id is not None:
-            if self.feature_set != "fedibird":
-                raise MastodonIllegalArgumentError('quote_id is only available with feature set fedibird. For standard Mastodon, use quoted_status_id instead.')
-            quote_id = self.__unpack_id(quote_id)
-
-        if quoted_status_id is not None:
-            quoted_status_id = self.__unpack_id(quoted_status_id)
-
-        if quote_approval_policy is not None:
-            valid_policies = ['public', 'followers', 'nobody']
-            if quote_approval_policy not in valid_policies:
-                raise MastodonIllegalArgumentError(f'Invalid quote_approval_policy. Valid values are {valid_policies}')
-
-        if content_type is not None:
-            if self.feature_set != "pleroma":
-                if strict_content_type:
-                    raise MastodonIllegalArgumentError('content_type is only available with feature set pleroma')
-                
-            # It would be better to read this from nodeinfo and cache, but this is easier
-            if not content_type in ["text/plain", "text/html", "text/markdown", "text/bbcode"]:
-                if strict_content_type:
-                    raise MastodonIllegalArgumentError('Invalid content type specified')
-
-        if in_reply_to_id is not None:
-            in_reply_to_id = self.__unpack_id(in_reply_to_id)
-
-        if scheduled_at is not None:
-            scheduled_at = self.__consistent_isoformat_utc(scheduled_at)
-
-        params_initial = locals()
-
-        # Validate poll/media exclusivity
-        if poll is not None:
-            if media_ids is not None and len(media_ids) != 0:
-                raise ValueError(
-                    'Status can have media or poll attached - not both.')
-
-        # Validate visibility parameter
-        valid_visibilities = ['private', 'public', 'unlisted', 'direct']
-        if params_initial['visibility'] is None:
-            del params_initial['visibility']
-        else:
-            params_initial['visibility'] = params_initial['visibility'].lower()
-            if params_initial['visibility'] not in valid_visibilities:
-                raise ValueError(f'Invalid visibility value! Acceptable values are {valid_visibilities}')
-
-        if params_initial['language'] is None:
-            del params_initial['language']
-
-        if params_initial['sensitive'] is False:
-            del params_initial['sensitive']
-
-        headers = {}
-        if idempotency_key is not None:
-            headers['Idempotency-Key'] = idempotency_key
-
-        if media_ids is not None:
-            try:
-                media_ids_proper = []
-                if not isinstance(media_ids, (list, tuple)):
-                    media_ids = [media_ids]
-                for media_id in media_ids:
-                    media_ids_proper.append(self.__unpack_id(media_id))
-            except Exception as e:
-                raise MastodonIllegalArgumentError(f"Invalid media dict: {e}")
-
-            params_initial["media_ids"] = media_ids_proper
-
-        if params_initial['content_type'] is None:
-            del params_initial['content_type']
-
-        use_json = False
-        if poll is not None or media_attributes is not None:
-            use_json = True
-
-        # If media_attributes is set, make sure that media_ids contains at least all the IDs of the media from media_attributes
-        if media_attributes is not None:
-            if "media_ids" in params_initial and params_initial["media_ids"] is not None:
-                params_initial["media_ids"] = list(set(params_initial["media_ids"]) + set([x["id"] for x in media_attributes]))
-            else:
-                params_initial["media_ids"] = [x["id"] for x in media_attributes]
-
-        params = self.__generate_params(params_initial, ['idempotency_key', 'edit', 'strict_content_type'], for_json = use_json)
-        cast_type = Status
-        if scheduled_at is not None:
-            cast_type = ScheduledStatus
-        if edit is None:
-            # Post
-            return self.__api_request('POST', '/api/v1/statuses', params, headers=headers, use_json=use_json, override_type=cast_type)
-        else:
-            # Edit
-            return self.__api_request('PUT', f'/api/v1/statuses/{self.__unpack_id(edit)}', params, headers=headers, use_json=use_json, override_type=cast_type)
+        pass
 
     @api_version("1.0.0", "4.5.0")
     def status_post(self, status: str, in_reply_to_id: Optional[Union[Status, IdType]] = None, media_ids: Optional[List[Union[MediaAttachment, IdType]]] = None,
@@ -297,24 +195,7 @@ class Mastodon(Internals):
 
         Returns the new status.
         """
-        return self.__status_internal(
-            status,
-            in_reply_to_id,
-            media_ids,
-            sensitive,
-            visibility,
-            spoiler_text,
-            language,
-            idempotency_key,
-            content_type,
-            scheduled_at,
-            poll,
-            quote_id,
-            edit=None,
-            strict_content_type=strict_content_type,
-            quoted_status_id=quoted_status_id,
-            quote_approval_policy=quote_approval_policy
-        )
+        pass
 
     @api_version("1.0.0", "2.8.0")
     def toot(self, status: str) -> Status:
@@ -323,7 +204,7 @@ class Mastodon(Internals):
 
         Usage in production code is not recommended.
         """
-        return self.status_post(status)
+        pass
 
 
     def generate_media_edit_attributes(self, id: Union[MediaAttachment, IdType], description: Optional[str] = None, 
@@ -338,24 +219,7 @@ class Mastodon(Internals):
         - `focus` (Optional[Tuple[float, float]]): The focal point of the media.
         - `thumbnail` (Optional[PathOrFile]): The thumbnail to be used.
         """
-        media_edit = {"id": self.__unpack_id(id)}
-        
-        if description is not None:
-            media_edit["description"] = description
-        
-        if focus is not None:
-            if isinstance(focus, tuple) and len(focus) == 2:
-                media_edit["focus"] = f"{focus[0]},{focus[1]}"
-            else:
-                raise MastodonIllegalArgumentError("Focus must be a tuple of two floats between -1 and 1")
-        
-        if thumbnail is not None:
-            if not self.verify_minimum_version("3.2.0", cached=True):
-                raise MastodonVersionError('Thumbnail requires version > 3.2.0')
-            _, thumb_file, thumb_mimetype = self.__load_media_file(thumbnail, thumb_mimetype)
-            media_edit["thumbnail"] =  f"data:{thumb_mimetype};base64,{base64.b64encode(thumb_file.read()).decode()}"
-        
-        return media_edit
+        pass
 
     @api_version("3.5.0", "4.1.0")
     def status_update(self, id: Union[Status, IdType], status: str, spoiler_text: Optional[str] = None, 
@@ -372,16 +236,7 @@ class Mastodon(Internals):
         You can use :meth:`generate_media_edit_attributes`
         to generate these dictionaries.
         """
-        return self.__status_internal(
-            status=status,
-            media_ids=media_ids,
-            sensitive=sensitive,
-            spoiler_text=spoiler_text,
-            poll=poll,
-            edit=id,
-            media_attributes=media_attributes,
-            quote_approval_policy=quote_approval_policy
-        )
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def status_history(self, id: Union[StatusEdit, IdType]) -> NonPaginatableList[StatusEdit]:
@@ -391,8 +246,7 @@ class Mastodon(Internals):
         once will have *two* entries in this list, a status that has been edited twice
         will have three, and so on.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f"/api/v1/statuses/{id}/history")
+        pass
 
     def status_source(self, id: Union[Status, IdType]) -> StatusSource:
         """
@@ -402,8 +256,7 @@ class Mastodon(Internals):
         :ref:`status_update() <status_update()>` to change nothing about the status, except `status` is `text`
         instead.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f"/api/v1/statuses/{id}/source")
+        pass
 
     @api_version("1.0.0", "4.5.0")
     def status_reply(self, to_status: Union[Status, IdType], status: str, media_ids: Optional[List[Union[MediaAttachment, IdType]]] = None,
@@ -423,39 +276,7 @@ class Mastodon(Internals):
         are replying to, removing every other mentioned user from the
         conversation.
         """
-        keyword_args = locals().copy()
-        del keyword_args["self"]
-        del keyword_args["to_status"]
-        del keyword_args["untag"]
-
-        user_id = self.__get_logged_in_id()
-
-        # Determine users to mention
-        mentioned_accounts = collections.OrderedDict()
-        try:
-            mentioned_accounts[to_status.account.id] = to_status.account.acct
-        except AttributeError as e:
-            raise TypeError("to_status must specify a status dict!") from e
-
-        if not untag:
-            for account in to_status.mentions:
-                if account.id != user_id and not account.id in mentioned_accounts.keys():
-                    mentioned_accounts[account.id] = account.acct
-
-        # Join into one piece of text. The space is added inside because of self-replies.
-        status = " ".join(f"@{x}" for x in mentioned_accounts.values()) + " " + status
-
-        # Retain visibility / cw
-        if visibility is None and 'visibility' in to_status:
-            visibility = to_status.visibility
-        if spoiler_text is None and 'spoiler_text' in to_status:
-            spoiler_text = to_status.spoiler_text
-
-        keyword_args["status"] = status
-        keyword_args["visibility"] = visibility
-        keyword_args["spoiler_text"] = spoiler_text
-        keyword_args["in_reply_to_id"] = to_status.id
-        return self.status_post(**keyword_args)
+        pass
 
     @api_version("1.0.0", "1.0.0")
     def status_delete(self, id: Union[Status, IdType], delete_media: bool = None) -> Status:
@@ -474,9 +295,7 @@ class Mastodon(Internals):
         set this, you will not be able to reuse them in a new status (so if you're delete-redrafting,
         you should not set this).
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ['id'])
-        return self.__api_request('DELETE', f'/api/v1/statuses/{id}', params)
+        pass
 
     @api_version("1.0.0", "2.0.0")
     def status_reblog(self, id: Union[Status, IdType], visibility: Optional[str] = None) -> Status:
@@ -488,15 +307,7 @@ class Mastodon(Internals):
 
         Returns a new Status that wraps around the reblogged status.
         """
-        params = self.__generate_params(locals(), ['id'])
-        valid_visibilities = ['private', 'public', 'unlisted', 'direct']
-        if 'visibility' in params:
-            params['visibility'] = params['visibility'].lower()
-            if params['visibility'] not in valid_visibilities:
-                raise ValueError(f'Invalid visibility value! Acceptable values are {valid_visibilities}')
-
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/reblog', params)
+        pass
 
     @api_version("1.0.0", "2.0.0")
     def status_unreblog(self, id: Union[Status, IdType]) -> Status:
@@ -505,8 +316,7 @@ class Mastodon(Internals):
 
         Returns the status that used to be reblogged.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/unreblog')
+        pass
 
     @api_version("1.0.0", "2.0.0")
     def status_favourite(self, id: Union[Status, IdType]) -> Status:
@@ -515,8 +325,7 @@ class Mastodon(Internals):
 
         Returns the favourited status.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/favourite')
+        pass
 
     @api_version("1.0.0", "2.0.0")
     def status_unfavourite(self, id: Union[Status, IdType]) -> Status: 
@@ -525,8 +334,7 @@ class Mastodon(Internals):
 
         Returns the un-favourited status.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/unfavourite')
+        pass
 
     @api_version("1.4.0", "2.0.0")
     def status_mute(self, id: Union[Status, IdType]) -> Status:
@@ -535,8 +343,7 @@ class Mastodon(Internals):
 
         Returns the now muted status
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/mute')
+        pass
 
     @api_version("1.4.0", "2.0.0")
     def status_unmute(self, id: Union[Status, IdType]) -> Status:
@@ -545,8 +352,7 @@ class Mastodon(Internals):
 
         Returns the status that used to be muted.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/unmute')
+        pass
 
     @api_version("2.1.0", "2.1.0")
     def status_pin(self, id: Union[Status, IdType]) -> Status:
@@ -555,8 +361,7 @@ class Mastodon(Internals):
 
         Returns the now pinned status
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/pin')
+        pass
 
     @api_version("2.1.0", "2.1.0")
     def status_unpin(self, id: Union[Status, IdType]) -> Status:
@@ -565,8 +370,7 @@ class Mastodon(Internals):
 
         Returns the status that used to be pinned.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/unpin')
+        pass
 
     @api_version("3.1.0", "3.1.0")
     def status_bookmark(self, id: Union[Status, IdType]) -> Status:
@@ -575,8 +379,7 @@ class Mastodon(Internals):
 
         Returns the now bookmarked status
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/bookmark')
+        pass
 
     @api_version("3.1.0", "3.1.0")
     def status_unbookmark(self, id: Union[Status, IdType]) -> Status:
@@ -585,8 +388,7 @@ class Mastodon(Internals):
 
         Returns the status that used to be bookmarked.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/unbookmark')
+        pass
 
     ###
     # Writing data: Scheduled statuses
@@ -600,18 +402,14 @@ class Mastodon(Internals):
 
         Returned object reflects the updates to the scheduled status.
         """
-        scheduled_at = self.__consistent_isoformat_utc(scheduled_at)
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ['id'])
-        return self.__api_request('PUT', f'/api/v1/scheduled_statuses/{id}', params)
+        pass
 
     @api_version("2.7.0", "2.7.0")
     def scheduled_status_delete(self, id: Union[Status, IdType]) -> None:
         """
         Deletes a scheduled status.
         """
-        id = self.__unpack_id(id)
-        self.__api_request('DELETE', f'/api/v1/scheduled_statuses/{id}')
+        pass
 
     ##
     # Translation
@@ -624,10 +422,7 @@ class Mastodon(Internals):
         Raises a `MastodonAPIError` if the server can't perform the requested translation, for any
         reason (doesn't support translation, unsupported language pair, etc.).
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ['id'])
-
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/translate', params)
+        pass
 
     ###
     # Reading data: Quotes
@@ -640,9 +435,7 @@ class Mastodon(Internals):
 
         Requires a logged-in user.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ['id'])
-        return self.__api_request('GET', f'/api/v1/statuses/{id}/quotes', params)
+        pass
 
     ###
     # Writing data: Quotes
@@ -657,9 +450,7 @@ class Mastodon(Internals):
 
         Returns the quoting status with the quote state set to ``'revoked'``.
         """
-        id = self.__unpack_id(id)
-        quoting_status_id = self.__unpack_id(quoting_status_id)
-        return self.__api_request('POST', f'/api/v1/statuses/{id}/quotes/{quoting_status_id}/revoke')
+        pass
 
     @api_version("4.5.0", "4.5.0")
     def status_update_quote_approval_policy(self, id: Union[Status, IdType], quote_approval_policy: str) -> Status:
@@ -679,6 +470,4 @@ class Mastodon(Internals):
 
         Returns the updated status.
         """
-        params = self.__generate_params(locals(), ['id'])
-        id = self.__unpack_id(id)
-        return self.__api_request('PUT', f'/api/v1/statuses/{id}/interaction_policy', params)
+        pass

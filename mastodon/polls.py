@@ -14,8 +14,7 @@ class Mastodon(Internals):
         """
         Fetch information about the poll with the given id
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/polls/{id}')
+        pass
 
     ###
     # Writing data: Polls
@@ -36,12 +35,7 @@ class Mastodon(Internals):
 
         The returned object will reflect the updated votes.
         """
-        id = self.__unpack_id(id)
-        if not isinstance(choices, list):
-            choices = [choices]
-        params = self.__generate_params(locals(), ['id'])
-
-        return self.__api_request('POST', f'/api/v1/polls/{id}/votes', params)
+        pass
 
     @api_version("2.8.0", "2.8.0")
     def make_poll(self, options: List[str], expires_in: int, multiple: bool = False, hide_totals: bool = False) -> Poll:
@@ -54,6 +48,4 @@ class Mastodon(Internals):
         Set multiple to True to allow people to choose more than one answer. Set
         hide_totals to True to hide the results of the poll until it has expired.
         """
-        poll_params = locals().copy()
-        del poll_params["self"]
-        return poll_params
+        pass

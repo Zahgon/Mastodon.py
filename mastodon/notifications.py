@@ -41,26 +41,7 @@ class Mastodon(Internals):
 
         Can be passed an `id` to fetch a single notification.
         """
-        if mentions_only is not None:
-            if exclude_types is None and types is None:
-                if mentions_only:
-                    if self.verify_minimum_version("3.5.0", cached=True):
-                        types = ["mention"]
-                    else:
-                        exclude_types = ["follow", "favourite", "reblog", "poll", "follow_request"]
-            else:
-                raise MastodonIllegalArgumentError('Cannot specify exclude_types/types when mentions_only is present')
-            del mentions_only
-
-        if account_id is not None:
-            account_id = self.__unpack_id(account_id)
-
-        if id is None:
-            params = self.__generate_params(locals(), ['id'], dateconv=True)
-            return self.__api_request('GET', '/api/v1/notifications', params)
-        else:
-            id = self.__unpack_id(id)
-            return self.__api_request('GET', f"/api/v1/notifications/{id}", override_type=Notification)
+        pass
 
     # Implement GET /api/v1/notifications/unread_count HTTP/1.1
     @api_version("4.3.0", "4.3.0")
@@ -68,7 +49,7 @@ class Mastodon(Internals):
         """
         Fetch the number of unread notifications for the logged-in user.
         """
-        return self.__api_request('GET', '/api/v1/notifications/unread_count')
+        pass
 
     ###
     # Writing data: Notifications
@@ -78,20 +59,14 @@ class Mastodon(Internals):
         """
         Clear out a user's notifications
         """
-        self.__api_request('POST', '/api/v1/notifications/clear')
+        pass
 
     @api_version("1.3.0", "2.9.2")
     def notifications_dismiss(self, id: Union[Notification, IdType]) -> None:
         """
         Deletes a single notification
         """
-        id = self.__unpack_id(id)
-
-        if self.verify_minimum_version("2.9.2", cached=True):
-            self.__api_request('POST', f'/api/v1/notifications/{id}/dismiss')
-        else:
-            params = self.__generate_params(locals())
-            self.__api_request('POST', '/api/v1/notifications/dismiss', params)
+        pass
 
     
     ##
@@ -103,7 +78,7 @@ class Mastodon(Internals):
         """
         Fetch the user's notification filtering policy. Requires scope `read:notifications`.
         """
-        return self.__api_request('GET', '/api/v2/notifications/policy')
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def update_notifications_policy(self, for_not_following: Optional[str] = None, for_not_followers: Optional[str] = None,
@@ -118,8 +93,7 @@ class Mastodon(Internals):
         - `for_private_mentions`: "accept", "filter", or "drop" notifications from private mentions.
         - `for_limited_accounts`: "accept", "filter", or "drop" notifications from accounts limited by moderators.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('PATCH', '/api/v2/notifications/policy', params)
+        pass
 
     ##
     # Notification requests
@@ -132,16 +106,14 @@ class Mastodon(Internals):
 
         NB: Notification requests are what happens when the user has set their policy to filter notifications from some source.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/notifications/requests', params)
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def notification_request(self, id: Union[NotificationRequest, IdType]) -> NotificationRequest:
         """
         Fetch a single notification request by ID. Requires scope `read:notifications`.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/notifications/requests/{id}')
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def accept_notification_request(self, id: Union[NotificationRequest, IdType]) -> None:
@@ -149,16 +121,14 @@ class Mastodon(Internals):
         Accept a notification request. This moves filtered notifications from a user back into the main notifications feed
         and allows future notifications from them. Requires scope `write:notifications`.
         """
-        id = self.__unpack_id(id)
-        self.__api_request('POST', f'/api/v1/notifications/requests/{id}/accept')
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def dismiss_notification_request(self, id: Union[NotificationRequest, IdType]) -> None:
         """
         Dismiss a notification request, removing it from pending requests. Requires scope `write:notifications`.
         """
-        id = self.__unpack_id(id)
-        self.__api_request('POST', f'/api/v1/notifications/requests/{id}/dismiss')
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def accept_multiple_notification_requests(self, ids: List[Union[NotificationRequest, IdType]]) -> None:
@@ -166,16 +136,14 @@ class Mastodon(Internals):
         Accept multiple notification requests at once. This moves filtered notifications from those users back into
         the main notifications feed and allows future notifications from them. Requires scope `write:notifications`.
         """
-        params = self.__generate_params({"id[]": [self.__unpack_id(i) for i in ids]})
-        self.__api_request('POST', '/api/v1/notifications/requests/accept', params)
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def dismiss_multiple_notification_requests(self, ids: List[Union[NotificationRequest, IdType]]) -> None:
         """
         Dismiss multiple notification requests, removing them from pending requests. Requires scope `write:notifications`.
         """
-        params = self.__generate_params({"id[]": [self.__unpack_id(i) for i in ids]})
-        self.__api_request('POST', '/api/v1/notifications/requests/dismiss', params)
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def notifications_merged(self) -> bool:
@@ -184,8 +152,7 @@ class Mastodon(Internals):
         Accepting a notification request schedules a background job that merges the filtered notifications.
         Clients can poll this endpoint to check if the merge has completed. Requires scope `read:notifications`.
         """
-        result = self.__api_request('GET', '/api/v1/notifications/requests/merged', override_type = dict)
-        return result["merged"]
+        pass
 
     ##
     # Grouped notifications
@@ -213,29 +180,28 @@ class Mastodon(Internals):
         recent account triggering a notification is always returned in full) of the included accounts. 
         The default is partial_avatars.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v2/notifications', params, force_pagination=True)
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def grouped_notification(self, group_key: str) -> GroupedNotificationsResults:
         """
         Fetch details of a single grouped notification by its group key. Requires scope `read:notifications`.
         """
-        return self.__api_request('GET', f'/api/v2/notifications/{group_key}')
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def dismiss_grouped_notification(self, group_key: str) -> None:
         """
         Dismiss a single grouped notification. Requires scope `write:notifications`.
         """
-        self.__api_request('POST', f'/api/v2/notifications/{group_key}/dismiss')
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def grouped_notification_accounts(self, group_key: str) -> NonPaginatableList[Account]:
         """
         Fetch accounts associated with a grouped notification. Requires scope `write:notifications`.
         """
-        return self.__api_request('GET', f'/api/v2/notifications/{group_key}/accounts')
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def unread_grouped_notifications_count(self, limit: Optional[int] = None,
@@ -247,5 +213,4 @@ class Mastodon(Internals):
 
         For parameters, see `notifications()` and `grouped_notifications()`.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v2/notifications/unread_count', params, override_type=dict)["count"]
+        pass

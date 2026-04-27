@@ -18,14 +18,14 @@ class Mastodon(Internals):
         Return the hashtags the logged-in user has set to be featured on
         their profile.
         """
-        return self.__api_request('GET', '/api/v1/featured_tags')
+        pass
 
     @api_version("3.0.0", "3.0.0")
     def featured_tag_suggestions(self) -> NonPaginatableList[FeaturedTag]:
         """
         Returns the logged-in user's 10 most commonly-used hashtags.
         """
-        return self.__api_request('GET', '/api/v1/featured_tags/suggestions')
+        pass
 
     ###
     # Writing data: Featured hashtags
@@ -39,8 +39,7 @@ class Mastodon(Internals):
 
         Obsoleted by `tag_feature` / `tag_unfeature`.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('POST', '/api/v1/featured_tags', params)
+        pass
 
     @api_version("3.0.0", "3.0.0")
     def featured_tag_delete(self, id: Union[FeaturedTag, IdType]) -> None:
@@ -49,8 +48,7 @@ class Mastodon(Internals):
 
         Obsoleted by `tag_feature` / `tag_unfeature`.
         """
-        id = self.__unpack_id(id)
-        self.__api_request('DELETE', f'/api/v1/featured_tags/{id}')
+        pass
 
     @api_version("4.4.0", "4.4.0")
     def tag_feature(self, name: str) -> Tag:
@@ -59,10 +57,7 @@ class Mastodon(Internals):
 
         Same effect as above, but newer. Likely obsoletes `featured_tag_create`.
         """
-        name = self.__unpack_id(name, field="name")
-        if name.startswith("#"):
-            raise MastodonIllegalArgumentError("Hashtag parameter should omit leading #")
-        return self.__api_request('POST', f'/api/v1/tags/{name}/feature')
+        pass
     
     @api_version("4.4.0", "4.4.0")
     def tag_unfeature(self, name: str) -> Tag:
@@ -71,10 +66,7 @@ class Mastodon(Internals):
 
         Same effect as above, but newer. Likely obsoletes `featured_tag_delete`.
         """
-        name = self.__unpack_id(name, field="name")
-        if name.startswith("#"):
-            raise MastodonIllegalArgumentError("Hashtag parameter should omit leading #")
-        return self.__api_request('POST', f'/api/v1/tags/{name}/unfeature')
+        pass
 
     ###
     # Reading data: Followed tags
@@ -86,8 +78,7 @@ class Mastodon(Internals):
         """
         Returns the logged-in user's followed tags.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/followed_tags', params)
+        pass
     
     
     @api_version("4.0.0", "4.0.0")
@@ -95,10 +86,7 @@ class Mastodon(Internals):
         """
         Get information about a single tag.
         """
-        hashtag = self.__unpack_id(hashtag, field="name")
-        if hashtag.startswith("#"):
-            raise MastodonIllegalArgumentError("Hashtag parameter should omit leading #")        
-        return self.__api_request('GET', f'/api/v1/tags/{hashtag}')
+        pass
     
     ###
     # Writing data: Followed tags
@@ -110,10 +98,7 @@ class Mastodon(Internals):
 
         Returns the newly followed tag.
         """
-        hashtag = self.__unpack_id(hashtag, field="name")
-        if hashtag.startswith("#"):
-            raise MastodonIllegalArgumentError("Hashtag parameter should omit leading #")        
-        return self.__api_request('POST', f'/api/v1/tags/{hashtag}/follow')
+        pass
     
     @api_version("4.0.0", "4.0.0")
     def tag_unfollow(self, hashtag: Union[Tag, str]) -> Tag:
@@ -122,8 +107,5 @@ class Mastodon(Internals):
 
         Returns the previously followed tag.
         """
-        hashtag = self.__unpack_id(hashtag, field="name")
-        if hashtag.startswith("#"):
-            raise MastodonIllegalArgumentError("Hashtag parameter should omit leading #")        
-        return self.__api_request('POST', f'/api/v1/tags/{hashtag}/unfollow')
+        pass
     

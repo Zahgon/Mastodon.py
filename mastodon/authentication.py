@@ -48,44 +48,7 @@ class Mastodon(Internals):
 
         Returns `client_id` and `client_secret`, both as strings.
         """
-        if api_base_url is None:
-            raise MastodonIllegalArgumentError("API base URL is required.")
-        api_base_url = Mastodon.__protocolize(api_base_url)
-
-        request_data = {
-            'client_name': client_name,
-            'scopes': " ".join(scopes)
-        }
-        headers = {
-            'User-Agent': user_agent
-        }
-
-        if redirect_uris is not None:
-            if isinstance(redirect_uris, (list, tuple)):
-                redirect_uris = "\n".join(list(redirect_uris))
-            request_data['redirect_uris'] = redirect_uris
-        else:
-            request_data['redirect_uris'] = 'urn:ietf:wg:oauth:2.0:oob'
-        if website is not None:
-            request_data['website'] = website
-        try:
-            if session:
-                ret = session.post(f"{api_base_url}/api/v1/apps", data=request_data, headers=headers, timeout=request_timeout)
-                response = ret.json()
-            else:
-                response = requests.post(f"{api_base_url}/api/v1/apps", data=request_data, headers=headers, timeout=request_timeout)
-                response = response.json()
-        except Exception as e:
-            raise MastodonNetworkError(f"Could not complete request: {e}")
-
-        if to_file is not None:
-            with open(to_file, 'w') as secret_file:
-                secret_file.write(response['client_id'] + "\n")
-                secret_file.write(response['client_secret'] + "\n")
-                secret_file.write(api_base_url + "\n")
-                secret_file.write(client_name + "\n")
-
-        return (response['client_id'], response['client_secret'])
+        pass
 
     ###
     # Authentication, including constructor
@@ -274,9 +237,7 @@ class Mastodon(Internals):
         """
         Clear cached data for astodon version and streaming base URL. Most programs should not have to call this.
         """
-        self.__version_check_worked = None
-        self.__version_check_tried = False
-        self.__streaming_base = None
+        pass
 
     def auth_request_url(self, client_id: Optional[Union[str, PurePath]] = None, redirect_uris: str = "urn:ietf:wg:oauth:2.0:oob", 
                          scopes: List[str] =_DEFAULT_SCOPES, force_login: bool = False, state: Optional[str] = None, 
@@ -308,34 +269,7 @@ class Mastodon(Internals):
         Pass `skip_server_info` to skip retrieving the OAuth authorization server info, in case you want to
         avoid the extra network request and are confident that the oauth server is at the default location.
         """
-        assert self.api_base_url is not None
-        if client_id is None:
-            client_id = self.client_id
-        else:
-            if os.path.isfile(client_id):
-                with open(client_id, 'r') as secret_file:
-                    client_id = secret_file.readline().rstrip()
-
-        params = dict()
-        params['client_id'] = client_id
-        params['response_type'] = "code"
-        params['redirect_uri'] = redirect_uris
-        params['scope'] = " ".join(scopes)
-        params['force_login'] = force_login
-        params['state'] = state
-        params['lang'] = lang
-        formatted_params = urlencode(params)
-        
-        # If we don't know better, assume the OAuth endpoint is at /oauth/authorize
-        oauth_url = "".join([self.api_base_url, "/oauth/authorize?", formatted_params])
-
-        # Let's see if we *do* know better
-        if not skip_server_info:
-            oauth_info = self.oauth_authorization_server_info()
-            if "authorization_endpoint" in oauth_info:
-                Mastodon.__oauth_url_check(oauth_info["authorization_endpoint"], allow_http=allow_http)
-                oauth_url = oauth_info["authorization_endpoint"] + "?" + formatted_params
-        return oauth_url
+        pass
     
     def oauth_authorization_server_info(self) -> Union[OAuthServerInfo, AttribAccessDict]:
         """
@@ -349,15 +283,7 @@ class Mastodon(Internals):
 
         Technically added in 4.3.0 but we never do a version check to avoid potential complications.
         """
-        assert self.api_base_url is not None
-        try:
-            response = self.__api_request('GET', '/.well-known/oauth-authorization-server', do_ratelimiting=False)
-        except MastodonAPIError:
-            # If the server doesn't support this endpoint, we want to ignore it and move on anyway.
-            # Some will respond with a 404 (raising the subclass `MastodonNotFoundError`), while some will just serve
-            # the whole frontend UI anyway for some reason, causing JSON parsing issues and raising `MastodonAPIError`.
-            response = AttribAccessDict()
-        return response
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def oauth_userinfo(self) -> OAuthUserInfo:
@@ -367,12 +293,7 @@ class Mastodon(Internals):
         Intended for something called "OpenID Connect", which you can find information about here:
         https://openid.net/developers/how-connect-works/ 
         """
-        oauth_url = "".join([self.api_base_url, "/oauth/userinfo"])
-        oauth_info = self.oauth_authorization_server_info()
-        if "userinfo_endpoint" in oauth_info:
-            oauth_url = Mastodon.__protocolize(oauth_info["userinfo_endpoint"])
-            Mastodon.__oauth_url_check(oauth_url)
-        return self.__api_request('GET', oauth_url, do_ratelimiting=False, base_url_override="")
+        pass
     
     def log_in(self, username: Optional[str] = None, password: Optional[str] = None, code: Optional[str] = None, 
                redirect_uri: str = "urn:ietf:wg:oauth:2.0:oob", refresh_token: Optional[str] = None, scopes: List[str] = _DEFAULT_SCOPES, 
@@ -399,86 +320,7 @@ class Mastodon(Internals):
         
         Returns the access token as a string.
         """
-        # This isn't called often, so no real need to cache
-        oauth_info = self.oauth_authorization_server_info()
-
-        # Trying to use password flow?
-        if password is not None:
-            # but it is not supported?
-            if "grant_types_supported" in oauth_info:
-                if "password" not in oauth_info["grant_types_supported"]:
-                    if self.verify_minimum_version("4.4.0"):
-                        # Give more useful error message if we know the version
-                        raise MastodonIllegalArgumentError('Password flow is no longer supported in Mastodon 4.4.0 and later. Please use the code flow instead.')
-                    else:
-                        raise MastodonIllegalArgumentError('Password flow is not supported by this instance. Please use the code flow instead.')
-
-        # Trying to use code flow?
-        if code is not None:
-            if "grant_types_supported" in oauth_info:
-                if "authorization_code" not in oauth_info["grant_types_supported"]:
-                    # This would be a very weird case, but I guess we can provide a good error here anyways.
-                    raise MastodonIllegalArgumentError('Authorization code flow is not supported by this instance. Please obtain a token in some other way.')
-                 
-        if username is not None and password is not None:
-            params = self.__generate_params(locals(), ['scopes', 'to_file', 'code', 'refresh_token', 'allow_http'])
-            params['grant_type'] = 'password'
-        elif code is not None:
-            params = self.__generate_params(locals(), ['scopes', 'to_file', 'username', 'password', 'refresh_token', 'allow_http'])
-            params['grant_type'] = 'authorization_code'
-        elif refresh_token is not None:
-            params = self.__generate_params(locals(), ['scopes', 'to_file', 'username', 'password', 'code', 'allow_http'])
-            params['grant_type'] = 'refresh_token'
-        else:
-            raise MastodonIllegalArgumentError('Invalid arguments given. username and password or code are required.')
-
-        params['client_id'] = self.client_id
-        params['client_secret'] = self.client_secret
-        params['scope'] = " ".join(scopes)
-
-        try:
-            # If we don't know any better, assume the OAuth endpoint is at /oauth/token
-            oauth_url = "".join([self.api_base_url, "/oauth/token"])
-
-            # Let's see if we *do* know better
-            if "token_endpoint" in oauth_info:
-                oauth_url = oauth_info["token_endpoint"]
-                Mastodon.__oauth_url_check(oauth_url, allow_http=allow_http)
-
-            response = self.__api_request('POST', oauth_url, params, do_ratelimiting = False, override_type = dict, base_url_override="")
-            self.access_token = response['access_token']
-            self.__set_refresh_token(response.get('refresh_token'))
-            self.__set_token_expired(int(response.get('expires_in', 0)))
-        except Exception as e:
-            if username is not None or password is not None:
-                raise MastodonIllegalArgumentError(f'Invalid user name, password, or redirect_uris: {e}')
-            elif code is not None:
-                raise MastodonIllegalArgumentError(f'Invalid access token or redirect_uris: {e}')
-            else:
-                raise MastodonIllegalArgumentError(f'Invalid request: {e}')
-
-        received_scopes = response["scope"].split(" ")
-        for scope_set in _SCOPE_SETS.keys():
-            if scope_set in received_scopes:
-                received_scopes += _SCOPE_SETS[scope_set]
-
-        if not set(scopes) <= set(received_scopes):
-            raise MastodonAPIError('Granted scopes "' + " ".join(received_scopes) + '" do not contain all of the requested scopes "' + " ".join(scopes) + '".')
-
-        if to_file is not None:
-            assert self.api_base_url is not None
-            assert self.client_id is not None and isinstance(self.client_id, str)
-            assert self.client_secret is not None
-            with open(str(to_file), 'w') as token_file:
-                token_file.write(self.persistable_login_credentials())
-        self.__logged_in_id = None
-
-        # Retry version check if needed (might be required in limited federation mode since
-        # if the API is locked down, we need to auth before we can get the version)
-        if not self.__version_check_worked:
-            self.retrieve_mastodon_version()
-
-        return response['access_token']
+        pass
     
     def persistable_login_credentials(self):
         """
@@ -488,40 +330,14 @@ class Mastodon(Internals):
 
         Obviously, treat it with care and store it in a manner that is appropriate for your application and the level of security you need.
         """
-        if self.access_token is None:
-            raise MastodonIllegalArgumentError("Not logged in, do not have a token to persist.")
-        if self.client_id is None or self.client_secret is None or not isinstance(self.client_id, str):
-            raise MastodonIllegalArgumentError("Client authentication (id + secret) is required to persist tokens.")
-        return self.access_token + "\n" + self.api_base_url + "\n" + self.client_id + "\n" + self.client_secret + "\n"
+        pass
 
     def revoke_access_token(self, allow_http: bool = False):
         """
         Revoke the oauth token the user is currently authenticated with, effectively removing
         the apps access and requiring the user to log in again.
         """
-        if self.access_token is None:
-            raise MastodonIllegalArgumentError("Not logged in, do not have a token to revoke.")
-        if self.client_id is None or self.client_secret is None:
-            raise MastodonIllegalArgumentError("Client authentication (id + secret) is required to revoke tokens.")
-        params = collections.OrderedDict([])
-        params['client_id'] = self.client_id
-        params['client_secret'] = self.client_secret
-        params['token'] = self.access_token
-
-        # If we don't know any better, assume the OAuth endpoint is at /oauth/revoke
-        oauth_url = "".join([self.api_base_url, "/oauth/revoke"])
-
-        # Let's see if we *do* know better
-        oauth_info = self.oauth_authorization_server_info()
-        if "revocation_endpoint" in oauth_info:
-            oauth_url = Mastodon.__protocolize(oauth_info["revocation_endpoint"])
-            Mastodon.__oauth_url_check(oauth_url, allow_http=allow_http)
-
-        self.__api_request('POST', oauth_url, params, do_ratelimiting=False, override_type=dict, base_url_override="")
-
-        # We are now logged out, clear token and logged in id
-        self.access_token = None
-        self.__logged_in_id = None
+        pass
 
     ###
     # Reading data: Apps
@@ -531,6 +347,6 @@ class Mastodon(Internals):
         """
         Fetch information about the current application.
         """
-        return self.__api_request('GET', '/api/v1/apps/verify_credentials')
+        pass
 
 

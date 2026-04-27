@@ -34,28 +34,7 @@ class Mastodon(Internals):
 
         Pagination on this is a bit weird, so I would recommend not doing that and instead manually fetching.
         """
-        if role_ids is not None:
-            if not isinstance(role_ids, list):
-                role_ids = [role_ids]
-            role_ids = [self.__unpack_id(x) for x in role_ids]
-
-        if invited_by is not None:
-            invited_by = self.__unpack_id(invited_by)
-
-        if permissions is not None and not permissions in ["staff"]:
-            raise MastodonIllegalArgumentError("Permissions must be staff if passed")
-
-        if origin is not None and not origin in ["local", "remote"]:
-            raise MastodonIllegalArgumentError("Origin must be local or remote")
-
-        if status is not None and not status in ["active", "pending", "disabled", "silenced", "suspended"]:
-            raise MastodonIllegalArgumentError("Status must be local or active, pending, disabled, silenced or suspended")
-
-        if not by_domain is None:
-            by_domain = self.__deprotocolize(by_domain)
-
-        params = self.__generate_params(locals(), dateconv=True)
-        return self.__api_request('GET', '/api/v2/admin/accounts', params)
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_accounts(self, remote: bool = False, by_domain: Optional[str] = None, status: str = 'active', username: Optional[str] = None, 
@@ -69,19 +48,7 @@ class Mastodon(Internals):
 
         Pagination on this is a bit weird, so I would recommend not doing that and instead manually fetching.
         """
-        return self.admin_accounts_v1(
-            remote=remote,
-            by_domain=by_domain,
-            status=status,
-            username=username,
-            display_name=display_name,
-            email=email,
-            ip=ip,
-            staff_only=staff_only,
-            max_id=max_id,
-            min_id=min_id,
-            since_id=since_id
-        )
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_accounts_v1(self, remote: bool = False, by_domain: Optional[str] = None, status: str = 'active', username: Optional[str] = None, 
@@ -107,34 +74,14 @@ class Mastodon(Internals):
 
         Pagination on this is a bit weird, so I would recommend not doing that and instead manually fetching.
         """
-        params = self.__generate_params(locals(), ['remote', 'status', 'staff_only'], dateconv=True)
-
-        if remote:
-            params["remote"] = True
-
-        mod_statuses = ["active", "pending", "disabled", "silenced", "suspended"]
-        if not status in mod_statuses:
-            raise ValueError("Invalid moderation status requested.")
-
-        if staff_only:
-            params["staff"] = True
-
-        for mod_status in mod_statuses:
-            if status == mod_status:
-                params[status] = True
-
-        if not by_domain is None:
-            by_domain = self.__deprotocolize(by_domain)
-
-        return self.__api_request('GET', '/api/v1/admin/accounts', params)
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_account(self, id: Union[Account, AdminAccount, IdType]) -> AdminAccount:
         """
         Fetches a single admin account for the user with the given id.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/admin/accounts/{id}')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_account_enable(self, id: Union[Account, AdminAccount, IdType]) -> AdminAccount:
@@ -143,8 +90,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the account.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/accounts/{id}/enable')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_account_approve(self, id: Union[Account, AdminAccount, IdType]) -> AdminAccount:
@@ -153,8 +99,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the account.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/accounts/{id}/approve')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_account_reject(self, id: Union[Account, AdminAccount, IdType]) -> AdminAccount:
@@ -163,8 +108,7 @@ class Mastodon(Internals):
 
         The returned object is that of the now-deleted account.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/accounts/{id}/reject')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_account_unsilence(self, id: Union[Account, AdminAccount, IdType]) -> AdminAccount:
@@ -173,8 +117,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the account.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/accounts/{id}/unsilence')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_account_unsuspend(self, id: Union[Account, AdminAccount, IdType]) -> AdminAccount:
@@ -183,8 +126,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the account.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/accounts/{id}/unsuspend')
+        pass
 
     @api_version("3.3.0", "3.3.0")
     def admin_account_delete(self, id: Union[Account, AdminAccount, IdType]) -> AdminAccount:
@@ -193,8 +135,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the account.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('DELETE', f'/api/v1/admin/accounts/{id}')
+        pass
 
     @api_version("3.3.0", "3.3.0")
     def admin_account_unsensitive(self, id: Union[Account, AdminAccount, IdType]) -> AdminAccount:
@@ -203,8 +144,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the account.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/accounts/{id}/unsensitive')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_account_moderate(self, id: Union[Account, AdminAccount, IdType], action: Optional[str] = None, report_id: Optional[Union[AdminReport, PrimitiveIdType]] = None, 
@@ -227,21 +167,7 @@ class Mastodon(Internals):
 
         Set `send_email_notification` to False to not send the user an email notification informing them of the moderation action.
         """
-        if action is None:
-            action = "none"
-
-        if not send_email_notification:
-            send_email_notification = None
-
-        id = self.__unpack_id(id)
-        if report_id is not None:
-            report_id = self.__unpack_id(report_id)
-
-        params = self.__generate_params(locals(), ['id', 'action'])
-
-        params["type"] = action
-
-        self.__api_request('POST', f'/api/v1/admin/accounts/{id}/action', params)
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_reports(self, resolved: Optional[bool] = False, account_id: Optional[Union[Account, AdminAccount, IdType]] = None, 
@@ -253,25 +179,14 @@ class Mastodon(Internals):
         Set `resolved` to True to search for resolved reports. `account_id` and `target_account_id`
         can be used to get reports filed by or about a specific user.
         """
-        if account_id is not None:
-            account_id = self.__unpack_id(account_id)
-
-        if target_account_id is not None:
-            target_account_id = self.__unpack_id(target_account_id)
-
-        if not resolved:
-            resolved = None
-
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/admin/reports', params)
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_report(self, id: Union[AdminReport, IdType]) -> AdminReport:
         """
         Fetches the report with the given id.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/admin/reports/{id}')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_report_assign(self, id: Union[AdminReport, IdType]) -> AdminReport:
@@ -280,8 +195,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the report.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/reports/{id}/assign_to_self')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_report_unassign(self, id: Union[AdminReport, IdType]) -> AdminReport:
@@ -290,8 +204,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the report.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/reports/{id}/unassign')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_report_reopen(self, id: Union[AdminReport, IdType]) -> AdminReport:
@@ -300,8 +213,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the report.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/reports/{id}/reopen')
+        pass
 
     @api_version("2.9.1", "2.9.1")
     def admin_report_resolve(self, id: Union[AdminReport, IdType]) -> AdminReport:
@@ -310,8 +222,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updates to the report.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/reports/{id}/resolve')
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def admin_trending_tags(self, limit: Optional[int] = None) -> NonPaginatableList[Tag]:
@@ -322,8 +233,7 @@ class Mastodon(Internals):
 
         Returns a regular Tag without admin attributes between Mastodon.py v4.0.0 and v4.1.0 due to a bug.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/admin/trends/tags', params)
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def admin_trending_statuses(self) -> NonPaginatableList[Status]:
@@ -332,8 +242,7 @@ class Mastodon(Internals):
 
         The returned list is sorted, descending, by the instance's trending algorithm.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/admin/trends/statuses', params)
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def admin_trending_links(self) -> NonPaginatableList[PreviewCard]:
@@ -342,8 +251,7 @@ class Mastodon(Internals):
 
         The returned list is sorted, descending, by the instance's trending algorithm.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/admin/trends/links', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_domain_blocks(self, id: Optional[IdType] = None, max_id: Optional[IdType] = None, min_id: Optional[IdType] = None, 
@@ -355,12 +263,7 @@ class Mastodon(Internals):
 
         Raises a `MastodonAPIError` if the specified block does not exist.
         """
-        if id is not None:
-            id = self.__unpack_id(id)
-            return self.__api_request('GET', f'/api/v1/admin/domain_blocks/{id}')
-        else:
-            params = self.__generate_params(locals(), ['limit'])
-            return self.__api_request('GET', '/api/v1/admin/domain_blocks/', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_create_domain_block(self, domain: str, severity: Optional[str] = None, reject_media: Optional[bool] = None, 
@@ -382,12 +285,7 @@ class Mastodon(Internals):
         `public_comment` sets a publicly available comment for this domain, which will be available to local users and may be available to everyone depending on your settings.
         `obfuscate` censors some part of the domain name. Useful if the domain name contains unwanted words like slurs.
         """
-        if domain is None:
-            raise MastodonIllegalArgumentError("Must provide a domain to block a domain")
-        if domain.startswith("http://") or domain.startswith("https://"):
-            raise MastodonIllegalArgumentError("Domain should not contain a protocol identifier.")
-        params = self.__generate_params(locals())
-        return self.__api_request('POST', '/api/v1/admin/domain_blocks/', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_update_domain_block(self, id, severity: Optional[str] = None, reject_media: Optional[bool] = None, reject_reports: Optional[bool] = None, 
@@ -410,11 +308,7 @@ class Mastodon(Internals):
 
         Raises a `MastodonAPIError` if the specified block does not exist.
         """
-        if id is None:
-            raise MastodonIllegalArgumentError("Must provide an id to modify the existing moderation actions on a given domain.")
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ["id"])
-        return self.__api_request('PUT', f'/api/v1/admin/domain_blocks/{id}', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_delete_domain_block(self, id: Union[AdminDomainBlock, IdType]) -> None:
@@ -425,11 +319,7 @@ class Mastodon(Internals):
 
         Raises a `MastodonAPIError` if the specified block does not exist.
         """
-        if id is not None:
-            id = self.__unpack_id(id)
-            self.__api_request('DELETE', f'/api/v1/admin/domain_blocks/{id}')
-        else:
-            raise MastodonIllegalArgumentError("You must provide an id of an existing domain block to remove it.")
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def admin_measures(self, start_at, end_at, active_users: bool = False, new_users: bool = False, interactions: bool = False, opened_reports: bool = False, resolved_reports: bool = False, 
@@ -460,30 +350,7 @@ class Mastodon(Internals):
         There is currently no way to get tag IDs implemented in Mastodon.py, because the Mastodon public API does not implement one. This will be fixed in a future
         release.
         """
-        params_init = locals()
-        keys = []
-        for key in ["active_users", "new_users", "interactions", "opened_reports", "resolved_reports"]:
-            if params_init[key] == True:
-                keys.append(key)
-
-        params = {}
-        for key in ["tag_accounts", "tag_uses", "tag_servers"]:
-            if params_init[key] is not None:
-                keys.append(key)
-                params[key] = {"id": self.__unpack_id(params_init[key])}
-        for key in ["instance_accounts", "instance_media_attachments", "instance_reports", "instance_statuses", "instance_follows", "instance_followers"]:
-            if params_init[key] is not None:
-                keys.append(key)
-                params[key] = {"domain": Mastodon.__deprotocolize(params_init[key]).split("/")[0]}
-
-        if len(keys) == 0:
-            raise MastodonIllegalArgumentError("Must request at least one metric.")
-
-        params["keys"] = keys
-        params["start_at"] = self.__consistent_isoformat_utc(start_at)
-        params["end_at"] = self.__consistent_isoformat_utc(end_at)
-
-        return self.__api_request('POST', '/api/v1/admin/measures', params, use_json=True)
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def admin_dimensions(self, start_at: datetime, end_at: datetime, limit: Optional[int] = None, languages: bool = False, sources: bool = False, 
@@ -509,47 +376,14 @@ class Mastodon(Internals):
         There is currently no way to get tag IDs implemented in Mastodon.py, because the Mastodon public API does not implement one. This will be fixed in a future
         release.
         """
-        params_init = locals()
-        keys = []
-        for key in ["languages", "sources", "servers", "space_usage", "software_versions"]:
-            if params_init[key] == True:
-                keys.append(key)
-
-        params = {}
-        for key in ["tag_servers", "tag_languages"]:
-            if params_init[key] is not None:
-                keys.append(key)
-                params[key] = {"id": self.__unpack_id(params_init[key])}
-        for key in ["instance_accounts", "instance_languages"]:
-            if params_init[key] is not None:
-                keys.append(key)
-                params[key] = {"domain": Mastodon.__deprotocolize(params_init[key]).split("/")[0]}
-
-        if len(keys) == 0:
-            raise MastodonIllegalArgumentError("Must request at least one dimension.")
-
-        params["keys"] = keys
-        if limit is not None:
-            params["limit"] = limit
-        params["start_at"] = self.__consistent_isoformat_utc(start_at)
-        params["end_at"] = self.__consistent_isoformat_utc(end_at)
-
-        return self.__api_request('POST', '/api/v1/admin/dimensions', params, use_json=True)
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def admin_retention(self, start_at: datetime, end_at: datetime, frequency: str = "day") -> NonPaginatableList[AdminRetention]:
         """
         Gets user retention statistics (at `frequency` - "day" or "month" - granularity) between `start_at` and `end_at`.
         """
-        if not frequency in ["day", "month"]:
-            raise MastodonIllegalArgumentError("Frequency must be day or month")
-
-        params = {
-            "start_at": self.__consistent_isoformat_utc(start_at),
-            "end_at": self.__consistent_isoformat_utc(end_at),
-            "frequency": frequency
-        }
-        return self.__api_request('POST', '/api/v1/admin/retention', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_canonical_email_blocks(self, max_id: Optional[IdType] = None, min_id: Optional[IdType] = None, 
@@ -559,8 +393,7 @@ class Mastodon(Internals):
 
         The returned list may be paginated using max_id, min_id, and since_id.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/admin/canonical_email_blocks', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_canonical_email_block(self, id: IdType) -> AdminCanonicalEmailBlock:
@@ -569,16 +402,14 @@ class Mastodon(Internals):
         
         Raises `MastodonAPIError` if the email block does not exist.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/admin/canonical_email_blocks/{id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_test_canonical_email_block(self, email: str) -> NonPaginatableList[AdminCanonicalEmailBlock]:
         """
         Canonicalize and hash an email address, returning all matching canonical email blocks. Requires scope `admin:read:canonical_email_blocks`.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('POST', '/api/v1/admin/canonical_email_blocks/test', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_create_canonical_email_block(self, email: Optional[str] = None, canonical_email_hash: Optional[str] = None) -> AdminCanonicalEmailBlock:
@@ -597,10 +428,7 @@ class Mastodon(Internals):
             * Anything after a + is removed
             * The hash in use is SHA256
         """
-        if email is None and canonical_email_hash is None:
-            raise MastodonIllegalArgumentError("Either 'email' or 'canonical_email_hash' must be provided.")
-        params = self.__generate_params(locals())
-        return self.__api_request('POST', '/api/v1/admin/canonical_email_blocks', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_delete_canonical_email_block(self, id: IdType) -> AdminCanonicalEmailBlock:
@@ -609,8 +437,7 @@ class Mastodon(Internals):
         
         Raises `MastodonAPIError` if the email block does not exist.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('DELETE', f'/api/v1/admin/canonical_email_blocks/{id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_domain_allows(self, max_id: Optional[IdType] = None, min_id: Optional[IdType] = None,
@@ -622,8 +449,7 @@ class Mastodon(Internals):
 
         NB: Untested, since I don't have a Mastodon instance in allowlist mode to test this with.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/admin/domain_allows', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_domain_allow(self, id: Union[AdminDomainAllow, IdType]) -> AdminDomainAllow:
@@ -634,8 +460,7 @@ class Mastodon(Internals):
 
         NB: Untested, since I don't have a Mastodon instance in allowlist mode to test this with.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/admin/domain_allows/{id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_create_domain_allow(self, domain: str) -> AdminDomainAllow:
@@ -646,8 +471,7 @@ class Mastodon(Internals):
 
         NB: Untested, since I don't have a Mastodon instance in allowlist mode to test this with.
         """
-        params = {"domain": domain}
-        return self.__api_request('POST', '/api/v1/admin/domain_allows', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_delete_domain_allow(self, id: Union[AdminDomainAllow, IdType]) -> None:
@@ -658,8 +482,7 @@ class Mastodon(Internals):
 
         NB: Untested, since I don't have a Mastodon instance in allowlist mode to test this with.
         """
-        id = self.__unpack_id(id)
-        self.__api_request('DELETE', f'/api/v1/admin/domain_allows/{id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_email_domain_blocks(self, max_id: Optional[IdType] = None, min_id: Optional[IdType] = None,
@@ -669,8 +492,7 @@ class Mastodon(Internals):
         
         The returned list may be paginated using max_id, min_id, and since_id.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/admin/email_domain_blocks', params)
+        pass
 
     @api_version("4.1.0", "4.1.0")
     def admin_email_domain_block(self, id: IdType) -> AdminEmailDomainBlock:
@@ -679,8 +501,7 @@ class Mastodon(Internals):
         
         Raises `MastodonAPIError` if the email domain block does not exist.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/admin/email_domain_blocks/{id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_create_email_domain_block(self, domain: str) -> AdminEmailDomainBlock:
@@ -689,8 +510,7 @@ class Mastodon(Internals):
         
         If the domain contains invalid characters, a `MastodonAPIError` will be raised.
         """
-        params = {"domain": domain}
-        return self.__api_request('POST', '/api/v1/admin/email_domain_blocks', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_delete_email_domain_block(self, id: IdType) -> None:
@@ -699,56 +519,49 @@ class Mastodon(Internals):
         
         Raises `MastodonAPIError` if the email domain block does not exist.
         """
-        id = self.__unpack_id(id)
-        self.__api_request('DELETE', f'/api/v1/admin/email_domain_blocks/{id}')
+        pass
 
     @api_version("4.2.0", "4.2.0")
     def admin_approve_trending_link(self, id: Union[PreviewCard, IdType]) -> PreviewCard:
         """
         Approve a trending link. Requires scope `admin:write`.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/trends/links/{id}/approve')
+        pass
 
     @api_version("4.2.0", "4.2.0")
     def admin_reject_trending_link(self, id: Union[PreviewCard, IdType]) -> PreviewCard:
         """
         Reject a trending link. Requires scope `admin:write`.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/trends/links/{id}/reject')
+        pass
 
     @api_version("4.2.0", "4.2.0")
     def admin_approve_trending_status(self, id: Union[Status, IdType]) -> Status:
         """
         Approve a trending status. Requires scope `admin:write`.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/trends/statuses/{id}/approve')
+        pass
 
     @api_version("4.2.0", "4.2.0")
     def admin_reject_trending_status(self, id: Union[Status, IdType]) -> Status:
         """
         Reject a trending status. Requires scope `admin:write`.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/trends/statuses/{id}/reject')
+        pass
 
     @api_version("4.2.0", "4.2.0")
     def admin_approve_trending_tag(self, id: Union[Tag, IdType]) -> Tag:
         """
         Approve a trending tag. Requires scope `admin:write`.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/trends/tags/{id}/approve')
+        pass
 
     @api_version("4.2.0", "4.2.0")
     def admin_reject_trending_tag(self, id: Union[Tag, IdType]) -> Tag:
         """
         Reject a trending tag. Requires scope `admin:write`.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/admin/trends/tags/{id}/reject')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_ip_blocks(self, max_id: Optional[IdType] = None, min_id: Optional[IdType] = None,
@@ -756,16 +569,14 @@ class Mastodon(Internals):
         """
         Fetches a list of blocked IP addresses and ranges. Requires scope `admin:read:ip_blocks`.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/admin/ip_blocks', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_ip_block(self, id: Union[AdminIpBlock, IdType]) -> AdminIpBlock:
         """
         Fetch a single blocked IP address or range by ID. Requires scope `admin:read:ip_blocks`.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/admin/ip_blocks/{id}')
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_create_ip_block(self, ip: str, severity: str, comment: Optional[str] = None,
@@ -783,8 +594,7 @@ class Mastodon(Internals):
 
         expires_in is the number of seconds until the block expires. If not provided, the block will be permanent.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('POST', '/api/v1/admin/ip_blocks', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_update_ip_block(self, id: Union[AdminIpBlock, IdType], ip: Optional[str] = None, severity: Optional[str] = None,
@@ -794,14 +604,11 @@ class Mastodon(Internals):
 
         expires_in is the number of seconds until the block expires. If not provided, the block will be permanent.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals())
-        return self.__api_request('PUT', f'/api/v1/admin/ip_blocks/{id}', params)
+        pass
 
     @api_version("4.0.0", "4.0.0")
     def admin_delete_ip_block(self, id: Union[AdminIpBlock, IdType]) -> None:
         """
         Remove an IP block. Requires scope `admin:write:ip_blocks`.
         """
-        id = self.__unpack_id(id)
-        self.__api_request('DELETE', f'/api/v1/admin/ip_blocks/{id}')
+        pass

@@ -25,15 +25,7 @@ class Mastodon(Internals):
 
         Returns None if the result has no async refresh information.
         """
-        raw = getattr(result, '_async_refresh', None)
-        if raw is not None:
-            entity = try_cast_recurse(AsyncRefresh, {
-                'id': raw['id'],
-                'status': 'running',
-                'result_count': raw.get('result_count'),
-            })
-            return (entity, raw.get('retry', 3))
-        return None
+        pass
 
     @api_version("4.4.0", "4.4.0")
     def get_async_refresh_status(self, result_or_id: Union[IdType, AsyncRefresh, AttribAccessDict]) -> AsyncRefresh:
@@ -49,11 +41,7 @@ class Mastodon(Internals):
 
         Returns an :class:`AsyncRefresh` dict.
         """
-        async_refresh_id = self.__get_async_refresh_id(result_or_id)
-        response = self.__api_request('GET', f'/api/v1_alpha/async_refreshes/{async_refresh_id}', override_type=dict)
-        if isinstance(response, dict) and 'async_refresh' in response:
-            response = response['async_refresh']
-        return try_cast_recurse(AsyncRefresh, response)
+        pass
 
     @api_version("4.4.0", "4.4.0")
     def await_async_refresh(self, result, timeout: float = 0.0, max_attempts: int = -1) -> Optional[AttribAccessDict]:
@@ -85,68 +73,10 @@ class Mastodon(Internals):
         Raises `MastodonAPIError` if any of the API requests made during the process 
         fail with an error response.
         """
-        async_refresh_info = getattr(result, '_async_refresh', None)
-        if async_refresh_info is None:
-            if not isinstance(result, (AttribAccessDict, list)):
-                raise MastodonIllegalArgumentError("await_async_refresh expects an API result entity.")
-            # no async refresh info -> just return right away
-            return result
-        else:
-            # if we do have it, make sure it has the original request information we need to re-fetch later
-            if '_method' not in async_refresh_info:
-                raise MastodonIllegalArgumentError("The provided result's async refresh information is missing the original request information.")
-        
-        # already done -> just return right away
-        if async_refresh_info.get('status') == 'finished':
-            return result
-            
-        async_refresh_id = async_refresh_info['id']
-        retry_seconds = async_refresh_info.get('retry', 3)
-
-        start_time = time.monotonic()
-        attempts = 0
-        refresh_result = None
-
-        while attempts < max_attempts or max_attempts <= 0:
-            if timeout > 0 and (time.monotonic() - start_time) >= timeout:
-                break
-            
-            if attempts > 0:
-                wait = min(retry_seconds, timeout - (time.monotonic() - start_time)) if timeout > 0 else retry_seconds
-                
-                # Make sure wait is maximum 5 minutes to avoid hangs in case server is being silly
-                wait = min(wait, 300)
-                
-                if wait > 0:
-                    time.sleep(wait)
-
-            refresh_result = self.get_async_refresh_status(async_refresh_id)
-            attempts += 1
-
-            if refresh_result.status == 'finished':
-                # Re-fetch the original endpoint
-                method = async_refresh_info['_method']
-                endpoint = async_refresh_info['_endpoint']
-                params = copy.deepcopy(async_refresh_info.get('_params', {}))
-                response_type = async_refresh_info.get('_mastopy_type', None)
-                return self.__api_request(method, endpoint, params, override_type=response_type)
-
-            # Use retry hint from the polled response's header if available
-            polled_raw = getattr(refresh_result, '_async_refresh', None)
-            if polled_raw is not None:
-                retry_seconds = polled_raw.get('retry', retry_seconds)
-
-        return None
+        pass
 
     def __get_async_refresh_id(self, result_or_id):
         """
         Internal helper: extract async refresh ID from an ID value or a result object.
         """
-        if isinstance(result_or_id, (str, int)):
-            return result_or_id
-        if isinstance(result_or_id, AsyncRefresh):
-            return result_or_id['id']
-        raw = getattr(result_or_id, '_async_refresh', None)
-        if raw is not None:
-            return raw['id']
-        raise MastodonIllegalArgumentError("Pass either an async refresh ID, an AsyncRefresh entity, or an API result with async refresh information.")
+        pass

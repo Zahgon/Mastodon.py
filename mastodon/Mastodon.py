@@ -81,4 +81,4 @@ class Mastodon(MastoUtility, MastoAuthentication, MastoAccounts, MastoInstance, 
         """
         Retrieve the maximum version of Mastodon supported by this version of Mastodon.py
         """
-        return Mastodon.__SUPPORTED_MASTODON_VERSION
+        pass

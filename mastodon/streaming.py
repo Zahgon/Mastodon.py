@@ -128,116 +128,13 @@ class StreamListener(object):
 
         response; a requests response object with the open stream for reading.
         """
-        event = {}
-        line_buffer = bytearray()
-        try:
-            for chunk in response.iter_content(chunk_size=1):
-                if chunk:
-                    for chunk_part in chunk:
-                        chunk_part = bytearray([chunk_part])
-                        if chunk_part == b'\n':
-                            try:
-                                line = line_buffer.decode('utf-8')
-                            except UnicodeDecodeError as err:
-                                exception = MastodonMalformedEventError(
-                                    "Malformed UTF-8")
-                                self.on_abort(exception)
-                                raise exception from err
-                            if line == '':
-                                self._dispatch(event)
-                                event = {}
-                            else:
-                                event = self._parse_line(line, event)
-                            line_buffer = bytearray()
-                        else:
-                            line_buffer.extend(chunk_part)
-        except ChunkedEncodingError as err:
-            exception = MastodonNetworkError("Server ceased communication.")
-            self.on_abort(exception)
-            raise exception from err
-        except ReadTimeout as err:
-            exception = MastodonReadTimeout(
-                "Timed out while reading from server."),
-            self.on_abort(exception)
-            raise exception from err
-        except ConnectionError as err:
-            exception = MastodonNetworkError(
-                "Requests reports connection error."),
-            self.on_abort(exception)
-            raise exception from err
+        pass
 
     def _parse_line(self, line, event):
-        if line.startswith(':'):
-            self.handle_heartbeat()
-        else:
-            try:
-                key, value = line.split(': ', 1)
-            except:
-                exception = MastodonMalformedEventError("Malformed event.")
-                self.on_abort(exception)
-                raise exception
-            # According to the MDN spec, repeating the 'data' key
-            # represents a newline(!)
-            if key in event:
-                event[key] += '\n' + value
-            else:
-                event[key] = value
-        return event
+        pass
 
     def _dispatch(self, event):
-        if not event:
-            return
-
-        try:
-            name = event['event']
-            data = event['data']
-            try:
-                for_stream = json.loads(event['stream'])
-            except:
-                for_stream = None
-            payload = json.loads(data)
-            cast_type = self.__EVENT_NAME_TO_TYPE.get(name, AttribAccessDict)
-            payload = try_cast_recurse(cast_type, payload)
-        except KeyError as err:
-            exception = MastodonMalformedEventError(
-                'Missing field', err.args[0], event)
-            self.on_abort(exception)
-            raise exception from err
-        except ValueError as err:
-            # py2: plain ValueError
-            # py3: json.JSONDecodeError, a subclass of ValueError
-            exception = MastodonMalformedEventError('Bad JSON', data)
-            self.on_abort(exception)
-            raise exception from err
-
-        # New mastodon API also supports event names with dots,
-        # specifically, status_update.
-        handler_name = 'on_' + name.replace('.', '_')
-
-        # A generic way to handle unknown events to make legacy code more stable for future changes
-        handler = getattr(self, handler_name, self.on_unknown_event)
-        try:
-            handler_args = list(signature(handler).parameters)
-        except:
-            handler_args = handler.__code__.co_varnames[:handler.__code__.co_argcount]
-
-        # The "for_stream" is right now only theoretical - it's only supported on websocket,
-        # and we do not support websocket based multiplexed streams (yet).
-        if "for_stream" in handler_args:
-            self.on_any_event(name, payload, for_stream)            
-            if handler != self.on_unknown_event:
-                handler(payload, for_stream)
-            else:
-                handler(name, payload, for_stream)
-        else:
-            if handler != self.on_unknown_event:
-                self.on_any_event(name, payload)
-                if handler == self.on_filters_changed:
-                    handler()
-                else:
-                    handler(payload)
-            else:
-                handler(name, payload)
+        pass
 
 
 class CallbackStreamListener(StreamListener):
@@ -278,51 +175,34 @@ class CallbackStreamListener(StreamListener):
         self.encryted_message_handler = encryted_message_handler
 
     def on_update(self, status):
-        if self.update_handler is not None:
-            self.update_handler(status)
-
-        try:
-            if self.local_update_handler is not None and not "@" in status["account"]["acct"]:
-                self.local_update_handler(status)
-        except Exception as err:
-            raise MastodonMalformedEventError('received bad update', status) from err
+        pass
 
     def on_delete(self, deleted_id: IdType):
-        if self.delete_handler is not None:
-            self.delete_handler(deleted_id)
+        pass
 
     def on_notification(self, notification: Notification):
-        if self.notification_handler is not None:
-            self.notification_handler(notification)
+        pass
 
     def on_filters_changed(self):
-        if self.filters_changed_handler is not None:
-            self.filters_changed_handler()
+        pass
 
     def on_conversation(self, conversation: Conversation):
-        if self.conversation_handler is not None:
-            self.conversation_handler(conversation)
+        pass
 
     def on_announcement(self, annoucement: Announcement):
-        if self.announcement_handler is not None:
-            self.announcement_handler(annoucement)
+        pass
 
     def on_announcement_reaction(self, reaction: StreamReaction):
-        if self.announcement_reaction_handler is not None:
-            self.announcement_reaction_handler(reaction)
+        pass
 
     def on_announcement_delete(self, annoucement_id: IdType):
-        if self.announcement_delete_handler is not None:
-            self.announcement_delete_handler(annoucement_id)
+        pass
 
     def on_status_update(self, status: Status):
-        if self.status_update_handler is not None:
-            self.status_update_handler(status)
+        pass
 
     def on_encrypted_message(self, unclear):
-        if self.encryted_message_handler is not None:
-            self.encryted_message_handler(unclear)
+        pass
 
     def on_unknown_event(self, name: str, unknown_event: Optional[Any] = None):
-        if self.unknown_event_handler is not None:
-            self.unknown_event_handler(name, unknown_event)
+        pass

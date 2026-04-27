@@ -54,65 +54,7 @@ class Mastodon(Internals):
             * ERR_TOO_SHORT - When an attribute is under the character requirement
             * ERR_INCLUSION - When an attribute is not one of the allowed values, e.g. unsupported locale
         """
-        # Do we have a date of birth? If so, add it to a string in YYYY-MM-DD format.
-        if date_of_birth is not None:
-            if not isinstance(date_of_birth, datetime):
-                raise MastodonIllegalArgumentError("date_of_birth must be a datetime object")
-            date_of_birth = date_of_birth.strftime("%Y-%m-%d")
-
-        params = self.__generate_params(locals(), ['to_file', 'scopes'])
-        params['client_id'] = self.client_id
-        params['client_secret'] = self.client_secret
-
-        if not agreement:
-            del params['agreement']
-
-        # Step 1: Get a user-free token via oauth
-        try:
-            oauth_params = {}
-            oauth_params['scope'] = " ".join(scopes)
-            oauth_params['client_id'] = self.client_id
-            oauth_params['client_secret'] = self.client_secret
-            oauth_params['grant_type'] = 'client_credentials'
-
-            response = self.__api_request('POST', '/oauth/token', oauth_params, do_ratelimiting=False, override_type=AttribAccessDict)
-            temp_access_token = response['access_token']
-        except Exception as e:
-            raise MastodonIllegalArgumentError(f'Invalid request during oauth phase: {e}')
-
-        # Step 2: Use that to create a user
-        response = self.__api_request('POST', '/api/v1/accounts', params, do_ratelimiting=False, access_token_override=temp_access_token, skip_error_check=True, override_type=dict)
-        if "error" in response:
-            if return_detailed_error:
-                return None, try_cast_recurse(AccountCreationError, response)
-            raise MastodonIllegalArgumentError(f'Invalid request: {response["error"]}')
-        self.access_token = response['access_token']
-        self.__set_refresh_token(response.get('refresh_token'))
-        self.__set_token_expired(int(response.get('expires_in', 0)))
-
-        # Step 3: Check scopes, persist, et cetera
-        received_scopes = response["scope"].split(" ")
-        for scope_set in _SCOPE_SETS.keys():
-            if scope_set in received_scopes:
-                received_scopes += _SCOPE_SETS[scope_set]
-
-        if not set(scopes) <= set(received_scopes):
-            raise MastodonAPIError(
-                f'Granted scopes "{" ".join(received_scopes)}" '
-                f'do not contain all of the requested scopes "{" ".join(scopes)}".'
-            )
-
-        if to_file is not None:
-            with open(to_file, 'w') as token_file:
-                token_file.write(response['access_token'] + "\n")
-                token_file.write(self.api_base_url + "\n")
-
-        self.__logged_in_id = None
-
-        if return_detailed_error:
-            return response['access_token'], AccountCreationError()
-        else:
-            return response['access_token']
+        pass
 
     @api_version("3.4.0", "3.4.0")
     def email_resend_confirmation(self) -> None:
@@ -121,7 +63,7 @@ class Mastodon(Internals):
 
         Only available to the app that the user originally signed up with.
         """
-        self.__api_request('POST', '/api/v1/emails/confirmations')
+        pass
 
     ###
     # Reading data: Accounts
@@ -133,8 +75,7 @@ class Mastodon(Internals):
 
         Does not require authentication for publicly visible accounts.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/accounts/{id}')
+        pass
 
     @api_version("4.3.0", "4.3.0")
     def accounts(self, ids: List[Union[Account, IdType]]) -> List[Account]:
@@ -143,15 +84,14 @@ class Mastodon(Internals):
 
         Does not require authentication for publicly visible accounts.
         """
-        ids = [self.__unpack_id(id, dateconv=True) for id in ids]
-        return self.__api_request('GET', '/api/v1/accounts', {"id[]": ids})
+        pass
 
     @api_version("1.0.0", "2.1.0")
     def account_verify_credentials(self) -> Account:
         """
         Fetch logged-in user's account information. Returns the version of the Account object with `source` field.
         """
-        return self.__api_request('GET', '/api/v1/accounts/verify_credentials')
+        pass
 
     @api_version("1.0.0", "2.1.0")
     def me(self) -> Account:
@@ -160,7 +100,7 @@ class Mastodon(Internals):
         the same thing, just exists because `account_verify_credentials()` has a confusing
         name.
         """
-        return self.account_verify_credentials()
+        pass
 
     @api_version("1.0.0", "2.8.0")
     def account_statuses(self, id: Union[Account, IdType], only_media: bool = False, pinned: bool = False, exclude_replies: bool = False, 
@@ -183,27 +123,7 @@ class Mastodon(Internals):
         Does not require authentication for Mastodon versions after 2.7.0 (returns
         publicly visible statuses in that case), for publicly visible accounts.
         """
-        id = self.__unpack_id(id)
-        if max_id is not None:
-            max_id = self.__unpack_id(max_id, dateconv=True)
-
-        if min_id is not None:
-            min_id = self.__unpack_id(min_id, dateconv=True)
-
-        if since_id is not None:
-            since_id = self.__unpack_id(since_id, dateconv=True)
-
-        params = self.__generate_params(locals(), ['id'])
-        if not pinned:
-            del params["pinned"]
-        if not only_media:
-            del params["only_media"]
-        if not exclude_replies:
-            del params["exclude_replies"]
-        if not exclude_reblogs:
-            del params["exclude_reblogs"]
-
-        return self.__api_request('GET', f'/api/v1/accounts/{id}/statuses', params)
+        pass
 
     @api_version("1.0.0", "2.6.0")
     def account_following(self, id: Union[Account, IdType], max_id: Optional[Union[Account, IdType]] = None, 
@@ -212,9 +132,7 @@ class Mastodon(Internals):
         """
         Fetch users the given user is following.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ['id'], dateconv=True)
-        return self.__api_request('GET', f'/api/v1/accounts/{id}/following', params)
+        pass
 
     @api_version("1.0.0", "2.6.0")
     def account_followers(self, id: Union[Account, IdType], max_id: Optional[Union[Account, IdType]] = None, 
@@ -223,9 +141,7 @@ class Mastodon(Internals):
         """
         Fetch users the given user is followed by.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ['id'], dateconv=True)
-        return self.__api_request('GET', f'/api/v1/accounts/{id}/followers', params)
+        pass
 
     @api_version("1.0.0", "1.4.0")
     def account_relationships(self, id: Union[List[Union[Account, IdType]], Union[Account, IdType]], with_suspended: Optional[bool] = None) -> NonPaginatableList[Relationship]:
@@ -235,10 +151,7 @@ class Mastodon(Internals):
 
         Pass `with_suspended = True` to include relationships with suspended accounts.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/accounts/relationships',
-                                  params)
+        pass
 
     @api_version("1.0.0", "2.8.0")
     def account_search(self, q: str, limit: Optional[int] = None, following: bool = False, resolve: bool = False, offset: Optional[int] = None) -> NonPaginatableList[Account]:
@@ -250,12 +163,7 @@ class Mastodon(Internals):
         Paginated in a weird way ("limit" / "offset"), if you want to fetch all results
         here please do it yourself for now.
         """
-        params = self.__generate_params(locals())
-
-        if params["following"] == False:
-            del params["following"]
-
-        return self.__api_request('GET', '/api/v1/accounts/search', params)
+        pass
 
     @api_version("2.1.0", "2.1.0")
     def account_lists(self, id: Union[Account, IdType]) -> NonPaginatableList[UserList]:
@@ -263,9 +171,7 @@ class Mastodon(Internals):
         Get all of the logged-in user's lists which the specified user is
         a member of.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ['id'])
-        return self.__api_request('GET', f'/api/v1/accounts/{id}/lists', params)
+        pass
 
     @api_version("3.4.0", "3.4.0")
     def account_lookup(self, acct: str) -> Account:
@@ -275,7 +181,7 @@ class Mastodon(Internals):
         and not do any webfinger requests. Use `account_search` if you need to resolve users
         through webfinger from remote.
         """
-        return self.__api_request('GET', '/api/v1/accounts/lookup', self.__generate_params(locals()))
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def account_familiar_followers(self, id: Union[List[Union[Account, IdType]], Union[Account, IdType]]) -> NonPaginatableList[FamiliarFollowers]:
@@ -283,8 +189,7 @@ class Mastodon(Internals):
         Find followers for the account given by id (can be a list) that also follow the
         logged in account.
         """
-        id = self.__unpack_id(id, listify = True)
-        return self.__api_request('GET', '/api/v1/accounts/familiar_followers', {'id': id}, use_json=True)
+        pass
 
     ###
     # Writing data: Accounts
@@ -299,13 +204,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated relationship with the user.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ["id"])
-
-        if params["reblogs"] is None:
-            del params["reblogs"]
-
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/follow', params)
+        pass
 
     @api_version("1.0.0", "2.1.0")
     def follows(self, uri: str) -> Relationship:
@@ -314,11 +213,7 @@ class Mastodon(Internals):
 
         Deprecated - avoid using this. Currently uses a backwards compat implementation that may or may not work properly.
         """
-        try:
-            acct = self.account_search(uri)[0]
-        except:
-            raise MastodonNotFoundError("User not found")
-        return self.account_follow(acct)
+        pass
 
     @api_version("1.0.0", "1.4.0")
     def account_unfollow(self, id: Union[Account, IdType]) -> Relationship:
@@ -327,8 +222,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated relationship with the user.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/unfollow')
+        pass
 
     @api_version("3.5.0", "3.5.0")
     def account_remove_from_followers(self, id: Union[Account, IdType]) -> Relationship:
@@ -338,8 +232,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated relationship with the user.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/remove_from_followers')
+        pass
 
     @api_version("1.0.0", "1.4.0")
     def account_block(self, id: Union[Account, IdType]) -> Relationship:
@@ -348,8 +241,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated relationship with the user.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/block')
+        pass
 
     @api_version("1.0.0", "1.4.0")
     def account_unblock(self, id: Union[Account, IdType]) -> Relationship:
@@ -358,8 +250,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated relationship with the user.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/unblock')
+        pass
 
     @api_version("1.1.0", "2.4.3")
     def account_mute(self, id: Union[Account, IdType], notifications: bool = True, duration: Optional[int] = None) -> Relationship:
@@ -372,9 +263,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated relationship with the user.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ['id'])
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/mute', params)
+        pass
 
     @api_version("1.1.0", "1.4.0")
     def account_unmute(self, id: Union[Account, IdType]) -> Relationship:
@@ -383,8 +272,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated relationship with the user.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/unmute')
+        pass
 
     @api_version("1.1.1", "4.2.0")
     def account_update_credentials(self, display_name: Optional[str] = None, note: Optional[str] = None,
@@ -433,40 +321,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated account.
         """
-        params_initial = collections.OrderedDict(locals())
-
-        # Convert fields
-        if fields is not None:
-            fields_attributes = []
-            for idx, (field_name, field_value) in enumerate(fields):
-                params_initial[f'fields_attributes[{idx}][name]'] = field_name
-                params_initial[f'fields_attributes[{idx}][value]'] = field_value
-
-        # Convert source[...] params to bracket notation
-        if default_privacy is not None:
-            params_initial['source[privacy]'] = default_privacy
-        if default_sensitive is not None:
-            params_initial['source[sensitive]'] = default_sensitive
-        if default_language is not None:
-            params_initial['source[language]'] = default_language
-        if default_quote_policy is not None:
-            params_initial['source[quote_policy]'] = default_quote_policy
-
-        # Clean up params
-        for param in ["avatar", "avatar_mime_type", "header", "header_mime_type", "fields",
-                       "default_privacy", "default_sensitive", "default_language", "default_quote_policy"]:
-            if param in params_initial:
-                del params_initial[param]
-
-        # Create file info
-        files = {}
-        if avatar is not None:
-            files["avatar"] = self.__load_media_file(avatar, avatar_mime_type)
-        if header is not None:
-            files["header"] = self.__load_media_file(header, header_mime_type)
-
-        params = self.__generate_params(params_initial)
-        return self.__api_request('PATCH', '/api/v1/accounts/update_credentials', params, files=files)
+        pass
 
     @api_version("2.5.0", "2.5.0")
     def account_pin(self, id: Union[Account, IdType]) -> Relationship:
@@ -477,8 +332,7 @@ class Mastodon(Internals):
 
         Deprecated, use `account_endorse` instead.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/pin')
+        pass
 
     @api_version("2.5.0", "2.5.0")
     def account_unpin(self, id: Union[Account, IdType]) -> Relationship:
@@ -489,8 +343,7 @@ class Mastodon(Internals):
 
         Deprecated, use `account_unendorse` instead.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/unpin')
+        pass
 
     @api_version("4.4.0", "4.4.0")
     def account_endorse(self, id: Union[Account, IdType]) -> Relationship:
@@ -499,8 +352,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated relationship with the user.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/endorse')
+        pass
     
     @api_version("4.4.0", "4.4.0")
     def account_unendorse(self, id: Union[Account, IdType]) -> Relationship:
@@ -509,8 +361,7 @@ class Mastodon(Internals):
 
         The returned object reflects the updated relationship with the user.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/unendorse')
+        pass
 
     @api_version("3.2.0", "3.2.0")
     def account_note_set(self, id: Union[Account, IdType], comment: str) -> Relationship:
@@ -521,29 +372,25 @@ class Mastodon(Internals):
 
         nb: To retrieve the current note for an account, use `account_relationships`.
         """
-        id = self.__unpack_id(id)
-        params = self.__generate_params(locals(), ["id"])
-        return self.__api_request('POST', f'/api/v1/accounts/{id}/note', params)
+        pass
 
     @api_version("3.3.0", "3.3.0")
     def account_featured_tags(self, id: Union[Account, IdType]) -> NonPaginatableList[Tag]:
         """
         Get an account's featured hashtags.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('GET', f'/api/v1/accounts/{id}/featured_tags')
+        pass
 
     @api_version("4.2.0", "4.2.0")
     def account_delete_avatar(self) -> None:
         """
         Delete the logged-in user's avatar.
         """
-        self.__api_request('DELETE', '/api/v1/profile/avatar')
+        pass
     
     @api_version("4.2.0", "4.2.0")
     def account_delete_header(self) -> None:
         """
         Delete the logged-in user's header.
         """
-
-        self.__api_request('DELETE', '/api/v1/profile/header')
+        pass

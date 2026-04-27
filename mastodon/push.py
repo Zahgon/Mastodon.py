@@ -24,7 +24,7 @@ class Mastodon(Internals):
 
         Only one webpush subscription can be active at a time for any given app.
         """
-        return self.__api_request('GET', '/api/v1/push/subscription')
+        pass
 
     ###
     # Writing data: Push subscriptions
@@ -68,61 +68,7 @@ class Mastodon(Internals):
         Pass `standard=True` to use the standard webpush subscription format, instead of the pre-release RFC format
         mastodon was using before.
         """
-        if not policy in ['all', 'none', 'follower', 'followed']:
-            raise MastodonIllegalArgumentError("Valid values for policy are 'all', 'none', 'follower' or 'followed'.")
-
-        endpoint = Mastodon.__protocolize(endpoint)
-
-        push_pubkey_b64 = base64.b64encode(encrypt_params['pubkey'])
-        push_auth_b64 = base64.b64encode(encrypt_params['auth'])
-
-        params = {
-            'subscription[endpoint]': endpoint,
-            'subscription[keys][p256dh]': push_pubkey_b64,
-            'subscription[keys][auth]': push_auth_b64,
-            'policy': policy
-        }
-
-        if follow_events is not None:
-            params['data[alerts][follow]'] = follow_events
-
-        if favourite_events is not None:
-            params['data[alerts][favourite]'] = favourite_events
-
-        if reblog_events is not None:
-            params['data[alerts][reblog]'] = reblog_events
-
-        if mention_events is not None:
-            params['data[alerts][mention]'] = mention_events
-
-        if poll_events is not None:
-            params['data[alerts][poll]'] = poll_events
-
-        if follow_request_events is not None:
-            params['data[alerts][follow_request]'] = follow_request_events
-
-        if status_events is not None:
-            params['data[alerts][status]'] = status_events
-
-        if update_events is not None:
-            params['data[alerts][update]'] = update_events
-        
-        if admin_sign_up_events is not None:
-            params['data[alerts][admin.sign_up]'] = admin_sign_up_events
-        
-        if admin_report_events is not None:
-            params['data[alerts][admin.report]'] = admin_report_events
-
-        if quote_events is not None:
-            params['data[alerts][quote]'] = quote_events
-
-        if quoted_update_events is not None:
-            params['data[alerts][quoted_update]'] = quoted_update_events
-
-        # Canonicalize booleans
-        params = self.__generate_params(params)
-
-        return self.__api_request('POST', '/api/v1/push/subscription', params)
+        pass
 
     @api_version("2.4.0", "2.4.0")
     def push_subscription_update(self, follow_events: Optional[bool] = None,
@@ -139,57 +85,14 @@ class Mastodon(Internals):
 
         Returned object reflects the updated push subscription.
         """
-        params = {}
-        if policy is not None:
-            params['policy'] = policy
-
-        if follow_events is not None:
-            params['data[alerts][follow]'] = follow_events
-
-        if favourite_events is not None:
-            params['data[alerts][favourite]'] = favourite_events
-
-        if reblog_events is not None:
-            params['data[alerts][reblog]'] = reblog_events
-
-        if mention_events is not None:
-            params['data[alerts][mention]'] = mention_events
-
-        if poll_events is not None:
-            params['data[alerts][poll]'] = poll_events
-
-        if follow_request_events is not None:
-            params['data[alerts][follow_request]'] = follow_request_events
-
-        if status_events is not None:
-            params['data[alerts][status]'] = status_events
-
-        if update_events is not None:
-            params['data[alerts][update]'] = update_events
-        
-        if admin_sign_up_events is not None:
-            params['data[alerts][admin.sign_up]'] = admin_sign_up_events
-        
-        if admin_report_events is not None:
-            params['data[alerts][admin.report]'] = admin_report_events
-
-        if quote_events is not None:
-            params['data[alerts][quote]'] = quote_events
-
-        if quoted_update_events is not None:
-            params['data[alerts][quoted_update]'] = quoted_update_events
-
-        # Canonicalize booleans
-        params = self.__generate_params(params)
-
-        return self.__api_request('PUT', '/api/v1/push/subscription', params)
+        pass
 
     @api_version("2.4.0", "2.4.0")
     def push_subscription_delete(self) -> None:
         """
         Remove the current push subscription the logged-in user has for this app.
         """
-        self.__api_request('DELETE', '/api/v1/push/subscription')
+        pass
 
     ###
     # Push subscription crypto utilities
@@ -201,32 +104,7 @@ class Mastodon(Internals):
         Returns two dicts: One with the private key and shared secret and another with the
         public key and shared secret.
         """
-        if not IMPL_HAS_CRYPTO:
-            raise NotImplementedError('To use the crypto tools, please install the webpush feature dependencies.')
-
-        push_key_pair = ec.generate_private_key(ec.SECP256R1(), default_backend())
-        push_key_priv = push_key_pair.private_numbers().private_value
-        try:
-            push_key_pub = push_key_pair.public_key().public_bytes(
-                serialization.Encoding.X962,
-                serialization.PublicFormat.UncompressedPoint,
-            )
-        except:
-            push_key_pub = push_key_pair.public_key().public_numbers().encode_point()
-
-        push_shared_secret = os.urandom(16)
-
-        priv_dict = {
-            'privkey': push_key_priv,
-            'auth': push_shared_secret
-        }
-
-        pub_dict = {
-            'pubkey': push_key_pub,
-            'auth': push_shared_secret
-        }
-
-        return priv_dict, pub_dict
+        pass
 
     @api_version("2.4.0", "2.4.0")
     def push_subscription_decrypt_push(self, data: bytes, decrypt_params: WebpushCryptoParamsPrivkey, encryption_header: str, crypto_key_header: str) -> PushNotification:
@@ -235,22 +113,4 @@ class Mastodon(Internals):
         from :ref:`push_subscription_generate_keys() <push_subscription_generate_keys()>` (`decrypt_params`) as well as the
         Encryption and server Crypto-Key headers from the received webpush
         """
-        if (not IMPL_HAS_ECE) or (not IMPL_HAS_CRYPTO):
-            raise NotImplementedError('To use the crypto tools, please install the webpush feature dependencies.')
-
-        salt = self.__decode_webpush_b64(encryption_header.split("salt=")[1].strip())
-        dhparams = self.__decode_webpush_b64(crypto_key_header.split("dh=")[1].split(";")[0].strip())
-        p256ecdsa = self.__decode_webpush_b64(crypto_key_header.split("p256ecdsa=")[1].strip())
-        dec_key = ec.derive_private_key(decrypt_params['privkey'], ec.SECP256R1(), default_backend())
-        decrypted = http_ece.decrypt(
-            data,
-            salt=salt,
-            key=p256ecdsa,
-            private_key=dec_key,
-            dh=dhparams,
-            auth_secret=decrypt_params['auth'],
-            keylabel="P-256",
-            version="aesgcm"
-        )
-
-        return try_cast_recurse(PushNotification, json.loads(decrypted.decode('utf-8')))
+        pass

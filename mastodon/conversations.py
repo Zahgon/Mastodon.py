@@ -16,8 +16,7 @@ class Mastodon(Internals):
         """
         Fetches a user's conversations.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', "/api/v1/conversations/", params)
+        pass
 
     ###
     # Writing data: Conversations
@@ -29,5 +28,4 @@ class Mastodon(Internals):
 
         The returned object reflects the conversation's new read status.
         """
-        id = self.__unpack_id(id)
-        return self.__api_request('POST', f'/api/v1/conversations/{id}/read')
+        pass

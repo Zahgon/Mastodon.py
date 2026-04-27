@@ -14,4 +14,4 @@ class Mastodon(Internals):
         """
         Fetch list of users endorsed by the logged-in user.
         """
-        return self.__api_request('GET', '/api/v1/endorsements')
+        pass

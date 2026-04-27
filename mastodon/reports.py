@@ -20,9 +20,7 @@ class Mastodon(Internals):
         Warning: This method has now finally been removed, and will not
         work on Mastodon versions 2.5.0 and above.
         """
-        if self.verify_minimum_version("2.5.0", cached = True):
-            raise MastodonVersionError("API removed in Mastodon 2.5.0")
-        return self.__api_request('GET', '/api/v1/reports')
+        pass
 
     ###
     # Writing data: Reports
@@ -44,19 +42,4 @@ class Mastodon(Internals):
         forward_to_domains to a list of domains to forward the report to (only domains of
         people mentioned in the status), or omitto forward to the domain of the reported status.
         """
-        if category is not None and not category in ["spam", "violation", "other"]:
-            raise MastodonIllegalArgumentError("Invalid report category (must be spam, violation or other)")
-
-        account_id = self.__unpack_id(account_id)
-
-        if status_ids is not None:
-            if not isinstance(status_ids, list):
-                status_ids = [status_ids]
-            status_ids = [self.__unpack_id(x) for x in status_ids]
-
-        params_initial = locals()
-        if not forward:
-            del params_initial['forward']
-
-        params = self.__generate_params(params_initial)
-        return self.__api_request('POST', '/api/v1/reports/', params)
+        pass

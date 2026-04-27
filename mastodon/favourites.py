@@ -19,8 +19,7 @@ class Mastodon(Internals):
         This endpoint uses internal ids for pagination, passing status ids to
         `max_id`, `min_id`, or `since_id` will not work.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/favourites', params)
+        pass
 
     ###
     # Reading data: Bookmarks
@@ -34,5 +33,4 @@ class Mastodon(Internals):
         This endpoint uses internal ids for pagination, passing status ids to
         `max_id`, `min_id`, or `since_id` will not work.
         """
-        params = self.__generate_params(locals())
-        return self.__api_request('GET', '/api/v1/bookmarks', params)
+        pass

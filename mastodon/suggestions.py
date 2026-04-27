@@ -15,14 +15,14 @@ class Mastodon(Internals):
         """
         Fetch follow suggestions for the logged-in user.
         """
-        return self.__api_request('GET', '/api/v1/suggestions')
+        pass
 
     @api_version("3.4.0", "3.4.0")
     def suggestions_v2(self) -> NonPaginatableList[Suggestion]:
         """
         Fetch follow suggestions for the logged-in user.
         """
-        return self.__api_request('GET', '/api/v2/suggestions')
+        pass
 
     def suggestions(self) -> Union[NonPaginatableList[Suggestion], NonPaginatableList[Account]]:
         """
@@ -31,11 +31,7 @@ class Mastodon(Internals):
         Will use the v1 endpoint if the server is below 3.4.0, otherwise will use the v2 endpoint
         and unpack the account dicts.
         """
-        if self.verify_minimum_version("3.4.0", cached=True):
-            suggestions = self.suggestions_v2()
-            return [s.account for s in suggestions]
-        else:
-            return self.suggestions_v1()
+        pass
 
     ###
     # Writing data: Follow suggestions
@@ -45,5 +41,4 @@ class Mastodon(Internals):
         """
         Remove the user with the given `account_id` from the follow suggestions.
         """
-        account_id = self.__unpack_id(account_id)
-        self.__api_request('DELETE', f'/api/v1/suggestions/{account_id}')
+        pass
